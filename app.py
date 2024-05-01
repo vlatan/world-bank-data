@@ -11,7 +11,7 @@ custom_style = "<style>div[data-baseweb='select']>div:hover{cursor:pointer}</sty
 st.markdown(custom_style, unsafe_allow_html=True)
 
 # functions to call when selecting from select box
-page_names_to_funcs: dict[str, Callable] = {
+options: dict[str, Callable] = {
     "Home": intro,
     "Economic Indicators": economic_indicators,
 }
@@ -19,7 +19,7 @@ page_names_to_funcs: dict[str, Callable] = {
 # render select box
 if topic := st.sidebar.selectbox(
     label="Choose a Topic",
-    options=page_names_to_funcs.keys(),
+    options=options.keys(),
     placeholder="Choose a Topic",
 ):
-    page_names_to_funcs[topic]()
+    options[topic]()
