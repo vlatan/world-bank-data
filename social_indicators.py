@@ -39,3 +39,38 @@ def social_indicators() -> None:
     """
 
     write_data("SP.POP.TOTL", title=title, description=description)
+
+    st.divider()  ###############################################################################
+
+    title = "Population growth (annual %)"
+    description = """
+        Annual population growth rate for year t is the exponential rate of growth 
+        of midyear population from year t-1 to t, expressed as a percentage. 
+        Population is based on the de facto definition of population, which counts 
+        all residents regardless of legal status or citizenship.
+    """
+
+    write_data("SP.POP.GROW", title=title, description=description)
+
+    st.divider()  ###############################################################################
+
+    title = "Net migration"
+    description = """
+        Net migration is the net total of migrants during the period, that is, 
+        the number of immigrants minus the number of emigrants, 
+        including both citizens and noncitizens.
+    """
+
+    write_data("SM.POP.NETM", title=title, description=description)
+
+    st.divider()  ###############################################################################
+
+    title = "Human Capital Index (HCI) (scale 0-1)"
+    description = """
+        The HCI calculates the contributions of health and education to worker productivity. 
+        The final index score ranges from zero to one and measures the productivity as a 
+        future worker of child born today relative to the benchmark of 
+        full health and complete education.
+    """
+
+    write_data("HD.HCI.OVRL", title=title, description=description)
