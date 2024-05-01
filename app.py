@@ -1,6 +1,7 @@
 import streamlit as st
 from typing import Callable
 from intro import intro
+from social_indicators import social_indicators
 from economis_indicators import economic_indicators
 
 # meta title
@@ -14,6 +15,7 @@ st.markdown(custom_style, unsafe_allow_html=True)
 options: dict[str, Callable] = {
     "Home": intro,
     "Economic Indicators": economic_indicators,
+    "Social Indicators": social_indicators,
 }
 
 # render select box
