@@ -10,8 +10,8 @@ def social_indicators() -> None:
 
     title = "Poverty headcount ratio at $2.15 a day (2017 PPP) (% of population)"
     description = """
-        Poverty headcount ratio at \$2.15 a day is the percentage of the population 
-        living on less than \$2.15 a day at 2017 purchasing power adjusted prices. 
+        Poverty headcount ratio at \\$2.15 a day is the percentage of the population 
+        living on less than \\$2.15 a day at 2017 purchasing power adjusted prices. 
         As a result of revisions in PPP exchange rates, poverty rates for individual 
         countries cannot be compared with poverty rates reported in earlier editions.
     """
