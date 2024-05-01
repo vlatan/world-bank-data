@@ -1,9 +1,13 @@
+import os
 import requests
-import constants
 import pandas as pd
 import altair as alt
 import streamlit as st
 from pandas import DataFrame
+from dotenv import load_dotenv
+
+
+load_dotenv()
 
 
 @st.cache_data
@@ -11,7 +15,8 @@ def get_data(indicator: str) -> tuple[DataFrame, ...]:
     """Get data per indicator from World Bank."""
 
     page, pages, result = 0, 1, []
-    api_endpoint = f"{constants.API_ROOT}/{indicator}?format=json"
+    API_BASE_URL = os.getenv("API_BASE_URL")
+    api_endpoint = f"{API_BASE_URL}/{indicator}?format=json"
 
     while page < pages:
 
