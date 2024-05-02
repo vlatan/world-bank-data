@@ -1,9 +1,9 @@
+import indicators
 import streamlit as st
-from typing import Callable
+import functools as ft
 from intro import intro
-from topics.social import social
-from topics.economis import economics
-from topics.environment import environment
+from typing import Callable
+from utils import write_topic
 
 # meta title
 st.set_page_config(page_title="Data Indicators - North Macedonia")
@@ -15,9 +15,10 @@ st.markdown(custom_style, unsafe_allow_html=True)
 # functions to call when selecting from select box
 options: dict[str, Callable] = {
     "Home": intro,
-    "Economics": economics,
-    "Social": social,
-    "Environment": environment,
+    "Economics": ft.partial(write_topic, "Economics", indicators.economics),
+    "Social": ft.partial(write_topic, "Social", indicators.social),
+    "Environment": ft.partial(write_topic, "Environment", indicators.environment),
+    "Institutions": ft.partial(write_topic, "Institutions", indicators.institutions),
 }
 
 # render select box

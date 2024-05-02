@@ -45,7 +45,7 @@ def get_indicator_data(indicator: str) -> dict[str, DataFrame | str]:
     }
 
 
-def write_data(indicator: str) -> None:
+def write_indicator(indicator: str) -> None:
     """Write title, description, table and chart to page."""
 
     data = get_indicator_data(indicator)
@@ -59,3 +59,12 @@ def write_data(indicator: str) -> None:
 
     chart = alt.Chart(chart_data).mark_area(opacity=0.4).encode(x="date", y="value")
     st.altair_chart(chart, use_container_width=True)
+
+
+def write_topic(title: str, indicators: list[str]) -> None:
+    """Write all indicators from a topic."""
+
+    st.title(title)
+    for indicator in indicators:
+        st.divider()
+        write_indicator(indicator)
