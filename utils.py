@@ -1,4 +1,5 @@
 import os
+import re
 import requests
 import pandas as pd
 import altair as alt
@@ -11,18 +12,18 @@ load_dotenv()
 
 
 @st.cache_data
-def get_data(indicator: str) -> tuple[DataFrame, ...]:
+def get_indicator_data(indicator: str) -> dict[str, DataFrame | str]:
     """Get data per indicator from World Bank."""
 
     page, pages, result = 0, 1, []
     API_BASE_URL = os.getenv("API_BASE_URL")
-    api_endpoint = f"{API_BASE_URL}/country/mk/indicator/{indicator}?format=json"
+    indicator_data_api = f"{API_BASE_URL}/country/mk/indicator/{indicator}?format=json"
 
     while page < pages:
 
         page += 1
 
-        response = requests.get(f"{api_endpoint}&page={page}").json()
+        response = requests.get(f"{indicator_data_api}&page={page}").json()
         pages, data = response[0]["pages"], response[1]
 
         result += [
@@ -31,23 +32,30 @@ def get_data(indicator: str) -> tuple[DataFrame, ...]:
             if item.get("value") is not None
         ]
 
-    dataframe = pd.DataFrame(data=result)
-    table = dataframe.set_index("date").transpose()
+    indicator_text_api = f"{API_BASE_URL}/indicator/{indicator}?format=json"
+    response = requests.get(indicator_text_api).json()[1][0]
 
-    return dataframe, table
+    chart_data = pd.DataFrame(data=result)
+
+    return {
+        "title": response["name"],
+        "description": response["sourceNote"],
+        "chart_data": chart_data,
+        "table": chart_data.set_index("date").transpose(),
+    }
 
 
-def write_data(indicator: str, title: str, description: str | None = None) -> None:
+def write_data(indicator: str) -> None:
     """Write title, description, table and chart to page."""
 
+    data = get_indicator_data(indicator)
+
+    title, description = data["title"], data["description"]
+    table, chart_data = data["table"], data["chart_data"]
+
     st.write(f"### {title}")
-
-    if description:
-        st.write(description)
-
-    df, table = get_data(indicator)
-
+    st.write(description)
     st.dataframe(table)
 
-    chart = alt.Chart(data=df).mark_area(opacity=0.4).encode(x="date", y="value")
+    chart = alt.Chart(chart_data).mark_area(opacity=0.4).encode(x="date", y="value")
     st.altair_chart(chart, use_container_width=True)
