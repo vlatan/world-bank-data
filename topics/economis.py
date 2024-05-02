@@ -2,9 +2,9 @@ import streamlit as st
 from utils import write_data
 
 
-def economic_indicators():
+def economics():
 
-    st.title("Economic Indicators")
+    st.title("Economics")
 
     st.divider()  ###############################################################################
 

@@ -2,9 +2,9 @@ import streamlit as st
 from utils import write_data
 
 
-def social_indicators() -> None:
+def social() -> None:
 
-    st.title("Social Indicators")
+    st.title("Social")
 
     st.divider()  ###############################################################################
 
