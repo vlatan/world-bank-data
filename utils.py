@@ -16,7 +16,7 @@ def get_data(indicator: str) -> tuple[DataFrame, ...]:
 
     page, pages, result = 0, 1, []
     API_BASE_URL = os.getenv("API_BASE_URL")
-    api_endpoint = f"{API_BASE_URL}/{indicator}?format=json"
+    api_endpoint = f"{API_BASE_URL}/country/mk/indicator/{indicator}?format=json"
 
     while page < pages:
 
