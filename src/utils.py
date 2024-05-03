@@ -1,5 +1,4 @@
 import os
-import re
 import requests
 import pandas as pd
 import altair as alt

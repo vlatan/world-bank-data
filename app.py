@@ -1,9 +1,9 @@
-import src.indicators as indicators
 import streamlit as st
 import functools as ft
-from src.intro import intro
 from typing import Callable
+from src.intro import intro
 from src.utils import write_topic
+import src.indicators as indicators
 
 # meta title
 st.set_page_config(page_title="Data Indicators - North Macedonia")
