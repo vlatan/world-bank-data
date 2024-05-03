@@ -1,4 +1,25 @@
-.env
-.venv
-.streamlit
+# extensions
+*.log
+*.db
+
+
+# cache directories
 __pycache__
+.pytest_cache
+
+
+# directories
+.venv
+.vscode
+.streamlit
+redis_data
+
+
+# files
+todo.txt
+
+
+# dotfiles
+.coverage
+.coverage*
+.env

@@ -1,0 +1,30 @@
+# extensions (on any level)
+**/*.md
+**/*.log
+**/*.db
+
+
+# cache directories (on any level)
+**/__pycache__
+**/.pytest_cache
+
+
+# directories (in the root)
+.venv
+.vscode
+.git
+redis_data
+
+
+# files (in the root)
+Dockerfile
+compose.yaml
+todo.txt
+
+
+# dotfiles (in the root)
+.coverage
+.coverage*
+.dockerignore
+.gitignore
+.env
