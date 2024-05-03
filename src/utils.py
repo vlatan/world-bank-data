@@ -11,7 +11,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
-@st.cache_data
+@st.cache_data(show_spinner="Fetching data...")
 def get_indicator_data(indicator: str) -> dict[str, DataFrame | str]:
     """Get data per indicator from World Bank."""
 
