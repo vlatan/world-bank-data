@@ -16,13 +16,15 @@ def get_indicator_data(indicator: str) -> dict[str, DataFrame | str]:
 
     page, pages, result = 0, 1, []
     API_BASE_URL = os.getenv("API_BASE_URL")
-    indicator_data_api = f"{API_BASE_URL}/country/mk/indicator/{indicator}?format=json"
+    COUNTRY_CODE = os.getenv("COUNTRY_CODE")
+
+    indicator_data_api = f"{API_BASE_URL}/country/{COUNTRY_CODE}/indicator/{indicator}"
 
     while page < pages:
 
         page += 1
 
-        response = requests.get(f"{indicator_data_api}&page={page}").json()
+        response = requests.get(f"{indicator_data_api}?page={page}&format=json").json()
         pages, data = response[0]["pages"], response[1]
 
         result += [
@@ -31,8 +33,8 @@ def get_indicator_data(indicator: str) -> dict[str, DataFrame | str]:
             if item.get("value") is not None
         ]
 
-    indicator_text_api = f"{API_BASE_URL}/indicator/{indicator}?format=json"
-    response = requests.get(indicator_text_api).json()[1][0]
+    indicator_info_api = f"{API_BASE_URL}/indicator/{indicator}?format=json"
+    response = requests.get(indicator_info_api).json()[1][0]
 
     chart_data = pd.DataFrame(data=result)
 
