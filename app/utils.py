@@ -1,13 +1,91 @@
 import os
+import json
+import redis
 import requests
+import functools
 import pandas as pd
 import altair as alt
 import streamlit as st
-from pandas import DataFrame
+from redis import Redis
+from typing import Callable
+from redis.exceptions import ConnectionError
 
 
-@st.cache_data(show_spinner="Fetching data...")
-def get_indicator_data(indicator: str) -> dict[str, DataFrame | str]:
+def init_redis_client() -> Redis | None:
+
+    try:
+        host = os.getenv("REDIS_HOST", "localhost")
+        password = os.getenv("REDIS_PASSWORD")
+        redis_client = redis.Redis(host=host, decode_responses=True)
+        redis_client.ping()
+        return redis_client
+    except ConnectionError:
+        return
+
+
+redis_client = init_redis_client()
+
+
+def cache_data(ttl: Callable | int) -> Callable:
+    """
+    Cache data in redis.
+
+    -----------------------------------------------------------------------
+
+    # Ordinary decorator (returns the decorated/modified function)
+    # modified_function = decorator(decorated_function)
+
+    # Decorator with arguments (is actually a function that returns a decorator
+    # and that decorator then is being called with the decorated function)
+    # decorator = decorator(arg)
+    # modified_function = decorator(decorated_function)
+    # Also can be written as:
+    # modified_function = decorator(arg)(decorated_function)
+
+    # If you use @cache_data without arguments (without parenthesis)
+    # the decorated function will be passed as its argument and decorator(func)
+    # will be called as if @decorator was directly used on the decorated function
+    # without the outer cache_data.
+
+    # If you use @cache_data(ttl=100) with argument then the decorator will be returned,
+    # which then will also be ultimately called as decorator(func).
+
+    # Both cases come to the same result but this gymnastic is used to be able to
+    # use the decorator @cached_data WITH and WITHOUT parenthesis / arguments.
+
+    # https://stackoverflow.com/a/35572746/1148508
+    """
+
+    def decorator(func: Callable) -> Callable:
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs) -> dict[str, list[dict] | str]:
+
+            ex = ttl if isinstance(ttl, int) else 86400
+
+            if not redis_client:
+                cached_func = st.cache_data(ttl=ex, show_spinner="Fetching data...")
+                return cached_func(func)(*args, **kwargs)
+
+            if result := redis_client.get(indicator := args[0]):
+                return json.loads(result)
+
+            result = func(*args, **kwargs)
+
+            # TODO: Put this into non-blocking thread and measure if there's benefit
+            redis_client.set(name=indicator, value=json.dumps(result), ex=ex)
+
+            return result
+
+        return wrapper
+
+    if callable(ttl):
+        return decorator(ttl)
+
+    return decorator
+
+
+@cache_data(ttl=500)
+def get_indicator_data(indicator: str) -> dict[str, list[dict] | str]:
     """Get data per indicator from World Bank."""
 
     page, pages, result = 0, 1, []
@@ -32,23 +110,20 @@ def get_indicator_data(indicator: str) -> dict[str, DataFrame | str]:
     indicator_info_api = f"{API_BASE_URL}/indicator/{indicator}?format=json"
     response = requests.get(indicator_info_api).json()[1][0]
 
-    chart_data = pd.DataFrame(data=result)
-
     return {
         "title": response["name"],
         "description": response["sourceNote"],
-        "chart_data": chart_data,
-        "table": chart_data.set_index("date").transpose(),
+        "data": result,
     }
 
 
 def write_indicator(indicator: str) -> None:
     """Write title, description, table and chart to page."""
 
-    data = get_indicator_data(indicator)
-
-    title, description = data["title"], data["description"]
-    table, chart_data = data["table"], data["chart_data"]
+    indicator_data = get_indicator_data(indicator)
+    title, description = indicator_data["title"], indicator_data["description"]
+    chart_data = pd.DataFrame(data=indicator_data["data"])
+    table = chart_data.set_index("date").transpose()
 
     st.write(f"### {title}")
     st.write(description)
