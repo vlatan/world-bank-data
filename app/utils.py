@@ -1,5 +1,6 @@
 import os
 import json
+import pathlib
 import requests
 import functools
 import pandas as pd
@@ -67,7 +68,6 @@ def cache_data(ttl: Callable | int) -> Callable:
             ex = ttl if isinstance(ttl, int) else 86400
 
             if not redis_client:
-                print("USING STREAMLIT CACHE")
                 cached_func = st.cache_data(ttl=ex, show_spinner="Fetching data...")
                 return cached_func(func)(*args, **kwargs)
 
@@ -146,3 +146,9 @@ def write_topic(title: str, indicators: list[str]) -> None:
     for indicator in indicators:
         st.divider()
         write_indicator(indicator)
+
+
+@functools.cache
+def get_topics() -> dict[str, list[str]]:
+    topics_file = pathlib.Path(__file__).parent.resolve() / "topics.json"
+    return json.loads(pathlib.Path(topics_file).read_text())

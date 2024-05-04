@@ -1,10 +1,8 @@
 import streamlit as st
 import functools as ft
 from .intro import intro
-from . import indicators
-from typing import Callable
 from dotenv import load_dotenv
-from .utils import write_topic
+from .utils import get_topics, write_topic
 
 
 # load the enviroment variables from an .env file
@@ -21,16 +19,14 @@ def create_app() -> None:
     custom_style = "<style>div[data-baseweb='select']>div:hover{cursor:pointer}</style>"
     st.markdown(custom_style, unsafe_allow_html=True)
 
-    # functions to call when selecting from select box
-    options: dict[str, Callable] = {
-        "Home": intro,
-        "Economics": ft.partial(write_topic, "Economics", indicators.economics),
-        "Social": ft.partial(write_topic, "Social", indicators.social),
-        "Environment": ft.partial(write_topic, "Environment", indicators.environment),
-        "Institutions": ft.partial(
-            write_topic, "Institutions", indicators.institutions
-        ),
-    }
+    options = {}  # functions to call when selecting from select box
+    for title, indicators in get_topics().items():
+
+        if (title := title.capitalize()) == "Home":
+            options[title] = intro
+            continue
+
+        options[title] = ft.partial(write_topic, title, indicators)
 
     # render select box
     if topic := st.sidebar.selectbox(

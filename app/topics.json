@@ -1,0 +1,33 @@
+{
+    "home": [],
+    "economics": [
+        "NY.GDP.MKTP.CD",
+        "NY.GDP.PCAP.CD",
+        "NY.GDP.MKTP.KD.ZG",
+        "SL.UEM.TOTL.ZS",
+        "FP.CPI.TOTL.ZG",
+        "BX.TRF.PWKR.DT.GD.ZS"
+    ],
+    "social": [
+        "SI.POV.DDAY",
+        "SP.DYN.LE00.IN",
+        "SP.POP.GROW",
+        "SM.POP.NETM",
+        "HD.HCI.OVRL"
+    ],
+    "environment": [
+        "EN.ATM.CO2E.PC",
+        "AG.LND.FRST.ZS",
+        "EG.ELC.ACCS.ZS",
+        "ER.H2O.FWTL.ZS",
+        "EG.ELC.RNWX.ZS",
+        "SH.STA.SMSS.ZS"
+    ],
+    "institutions": [
+        "VC.IHR.PSRC.P5",
+        "IQ.SPI.OVRL",
+        "IT.NET.USER.ZS",
+        "SG.GEN.PARL.ZS",
+        "BX.KLT.DINV.WD.GD.ZS"
+    ]
+}
