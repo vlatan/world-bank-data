@@ -1,6 +1,5 @@
 import os
 import json
-import redis
 import requests
 import functools
 import pandas as pd
@@ -15,11 +14,14 @@ def init_redis_client() -> Redis | None:
     """Initialize Redis client."""
 
     try:
-        host = os.getenv("REDIS_HOST", "localhost")
-        password = os.getenv("REDIS_PASSWORD")
-        redis_client = redis.Redis(host=host, decode_responses=True)
+        redis_client = Redis(
+            host=os.getenv("REDIS_HOST", "localhost"),
+            password=os.getenv("REDIS_PASSWORD"),
+        )
+
         redis_client.ping()
         return redis_client
+
     except ConnectionError:
         return
 
@@ -65,6 +67,7 @@ def cache_data(ttl: Callable | int) -> Callable:
             ex = ttl if isinstance(ttl, int) else 86400
 
             if not redis_client:
+                print("USING STREAMLIT CACHE")
                 cached_func = st.cache_data(ttl=ex, show_spinner="Fetching data...")
                 return cached_func(func)(*args, **kwargs)
 

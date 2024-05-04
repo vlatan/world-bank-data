@@ -4,8 +4,7 @@ services:
     restart: always
     image: redis:7.2
     container_name: redis
-    environment:
-      - REDIS_ARGS="--requirepass ${REDIS_PASSWORD}"
+    command: [ redis-server, --requirepass, $REDIS_PASSWORD ]
     healthcheck:
       test: [ "CMD", "redis-cli", "--raw", "INCR", "ping" ]
       interval: 3s
