@@ -26,7 +26,7 @@ RUN pip install --upgrade pip && \
 # copy all the necessary app files into the working dir
 COPY ./run.py ./
 COPY ./app ./app
-COPY ./.streamlit ./.streamlit
+COPY ./.streamlit* ./.streamlit
 
 # defult port env var
 ENV PORT=8501
