@@ -12,6 +12,7 @@ from redis.exceptions import ConnectionError
 
 
 def init_redis_client() -> Redis | None:
+    """Initialize Redis client."""
 
     try:
         host = os.getenv("REDIS_HOST", "localhost")
@@ -28,7 +29,8 @@ redis_client = init_redis_client()
 
 def cache_data(ttl: Callable | int) -> Callable:
     """
-    Cache data in redis.
+    Cache data in Redis.
+    If Redis not available cache in streamlit.
 
     -----------------------------------------------------------------------
 
@@ -42,7 +44,7 @@ def cache_data(ttl: Callable | int) -> Callable:
     # Also can be written as:
     # modified_function = decorator(arg)(decorated_function)
 
-    # If you use @cache_data without arguments (without parenthesis)
+    # If you use @cache_data without arguments (without parenthesis) then
     # the decorated function will be passed as its argument and decorator(func)
     # will be called as if @decorator was directly used on the decorated function
     # without the outer cache_data.
@@ -66,7 +68,8 @@ def cache_data(ttl: Callable | int) -> Callable:
                 cached_func = st.cache_data(ttl=ex, show_spinner="Fetching data...")
                 return cached_func(func)(*args, **kwargs)
 
-            if result := redis_client.get(indicator := args[0]):
+            result = redis_client.get(indicator := args[0])
+            if isinstance(result, (str, bytes, bytearray)):
                 return json.loads(result)
 
             result = func(*args, **kwargs)
@@ -84,7 +87,7 @@ def cache_data(ttl: Callable | int) -> Callable:
     return decorator
 
 
-@cache_data(ttl=500)
+@cache_data
 def get_indicator_data(indicator: str) -> dict[str, list[dict] | str]:
     """Get data per indicator from World Bank."""
 
