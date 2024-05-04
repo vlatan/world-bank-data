@@ -11,7 +11,7 @@ from .utils import write_topic
 load_dotenv()
 
 
-def write_app() -> None:
+def create_app() -> None:
     """Create streamlit application"""
 
     # meta title

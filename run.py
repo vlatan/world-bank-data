@@ -1,4 +1,4 @@
-from app import write_app
+from app import create_app
 
 if __name__ == "__main__":
-    write_app()
+    create_app()
