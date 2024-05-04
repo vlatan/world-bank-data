@@ -21,7 +21,6 @@ services:
     ports:
       - $PORT:$PORT
     env_file: .env
-    command: [ "streamlit", "run", "app.py", "--server.port", $PORT ]
     # Bind only files/dirs that you need for hot reloading
     # to avoid including unwanted files/dirs in the container
     # because Docker's order of operations dictate that
@@ -32,6 +31,7 @@ services:
     volumes:
       - ./src:/app/src
       - ./app.py:/app/app.py
+      - ./.streamlit:/app/.streamlit
     depends_on:
       redis:
         condition: service_healthy
