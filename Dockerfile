@@ -16,7 +16,7 @@ ENV PATH="${VIRTUAL_ENV}/bin:${PATH}" \
     PYTHONUNBUFFERED=1
 
 # set the container's working directory
-WORKDIR /app
+WORKDIR /src
 
 # copy requirements file and install dependencies
 COPY ./requirements.txt .
@@ -24,8 +24,8 @@ RUN pip install --upgrade pip && \
     pip install --no-cache-dir --upgrade -r requirements.txt
 
 # copy all the necessary app files into the working dir
-COPY ./app.py ./
-COPY ./src ./src
+COPY ./run.py ./
+COPY ./app ./app
 COPY ./.streamlit ./.streamlit
 
 # defult port env var
@@ -35,7 +35,7 @@ ENV PORT=8501
 HEALTHCHECK CMD curl --fail http://localhost:${PORT}/_stcore/health
 
 # command to run the streamlit app
-CMD streamlit run app.py \
+CMD streamlit run run.py \
     --browser.gatherUsageStats=false \
     --server.port=${PORT} \
     --server.address=0.0.0.0

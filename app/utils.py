@@ -4,10 +4,6 @@ import pandas as pd
 import altair as alt
 import streamlit as st
 from pandas import DataFrame
-from dotenv import load_dotenv
-
-
-load_dotenv()
 
 
 @st.cache_data(show_spinner="Fetching data...")

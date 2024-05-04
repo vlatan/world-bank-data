@@ -29,9 +29,9 @@ services:
     # https://stackoverflow.com/a/72485169/1148508
     # https://medium.com/nerd-for-tech/bigger-dockerignore-smaller-docker-images-49fa22e51c7
     volumes:
-      - ./src:/app/src
-      - ./app.py:/app/app.py
-      - ./.streamlit:/app/.streamlit
+      - ./app:/src/app
+      - ./run.py:/src/app.py
+      - ./.streamlit:/src/.streamlit
     depends_on:
       redis:
         condition: service_healthy
