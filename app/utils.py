@@ -10,7 +10,7 @@ from redis import Redis
 from typing import Callable
 from threading import Thread
 from redis.exceptions import ConnectionError
-from concurrent.futures import as_completed, ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor
 
 
 def init_redis_client() -> Redis | None:
