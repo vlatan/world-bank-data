@@ -10,6 +10,7 @@ from redis import Redis
 from typing import Callable
 from threading import Thread
 from redis.exceptions import ConnectionError
+from concurrent.futures import as_completed, ThreadPoolExecutor
 
 
 def init_redis_client() -> Redis | None:
@@ -102,33 +103,48 @@ def cache_data(ttl: Callable | int) -> Callable:
 def get_indicator_data(indicator: str) -> dict[str, list[dict] | str]:
     """Get data per indicator from World Bank."""
 
-    page, pages, result = 0, 1, []
-    API_BASE_URL = os.getenv("API_BASE_URL")
-    COUNTRY_CODE = os.getenv("COUNTRY_CODE")
+    def get_data():
+        page, pages, result = 0, 1, []
+        API_BASE_URL = os.getenv("API_BASE_URL")
+        COUNTRY_CODE = os.getenv("COUNTRY_CODE")
+        api = f"{API_BASE_URL}/country/{COUNTRY_CODE}/indicator/{indicator}"
 
-    indicator_data_api = f"{API_BASE_URL}/country/{COUNTRY_CODE}/indicator/{indicator}"
+        while page < pages:
 
-    while page < pages:
+            page += 1
 
-        page += 1
+            response = requests.get(f"{api}?page={page}&format=json").json()
+            pages, data = response[0]["pages"], response[1]
 
-        response = requests.get(f"{indicator_data_api}?page={page}&format=json").json()
-        pages, data = response[0]["pages"], response[1]
+            result += [
+                {key: value for key, value in item.items() if key in ["date", "value"]}
+                for item in data
+                if item.get("value") is not None
+            ]
 
-        result += [
-            {key: value for key, value in item.items() if key in ["date", "value"]}
-            for item in data
-            if item.get("value") is not None
-        ]
+        return result
 
-    indicator_info_api = f"{API_BASE_URL}/indicator/{indicator}?format=json"
-    response = requests.get(indicator_info_api).json()[1][0]
+    def get_info():
+        API_BASE_URL = os.getenv("API_BASE_URL")
+        api = f"{API_BASE_URL}/indicator/{indicator}?format=json"
+        return requests.get(api).json()[1][0]
 
-    return {
-        "title": response["name"],
-        "description": response["sourceNote"],
-        "data": result,
-    }
+    funcs = {"data": get_data, "info": get_info}
+
+    with ThreadPoolExecutor() as executor:
+        futures = {executor.submit(func): name for name, func in funcs.items()}
+
+        result = {}
+        for future in as_completed(futures):
+
+            if futures[future] == "data":
+                result["data"] = future.result()
+                continue
+
+            result["title"] = future.result()["name"]
+            result["description"] = future.result()["sourceNote"]
+
+        return result
 
 
 def write_indicator(indicator: str) -> None:
