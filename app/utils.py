@@ -99,60 +99,58 @@ def cache_data(ttl: Callable | int) -> Callable:
     return decorator
 
 
+def get_indicator_data(indicator_id: str) -> list[dict]:
+    """Get numerical data for indicator."""
+
+    page, pages, result = 0, 1, []
+    API_BASE_URL = os.getenv("API_BASE_URL")
+    COUNTRY_CODE = os.getenv("COUNTRY_CODE")
+    api = f"{API_BASE_URL}/country/{COUNTRY_CODE}/indicator/{indicator_id}"
+
+    while page < pages:
+        page += 1
+
+        response = requests.get(f"{api}?page={page}&format=json").json()
+        pages, data = response[0]["pages"], response[1]
+
+        result += [
+            {key: value for key, value in item.items() if key in ["date", "value"]}
+            for item in data
+            if item.get("value") is not None
+        ]
+
+    return result
+
+
+def get_indicator_info(indicator_id: str) -> dict[str, str]:
+    """Get indicator info (title and description)."""
+
+    API_BASE_URL = os.getenv("API_BASE_URL")
+    api = f"{API_BASE_URL}/indicator/{indicator_id}?format=json"
+    return requests.get(api).json()[1][0]
+
+
 @cache_data
-def get_indicator_data(indicator: str) -> dict[str, list[dict] | str]:
+def get_indicator(indicator_id: str) -> dict[str, list[dict] | str]:
     """Get data per indicator from World Bank."""
 
-    def get_data():
-        page, pages, result = 0, 1, []
-        API_BASE_URL = os.getenv("API_BASE_URL")
-        COUNTRY_CODE = os.getenv("COUNTRY_CODE")
-        api = f"{API_BASE_URL}/country/{COUNTRY_CODE}/indicator/{indicator}"
-
-        while page < pages:
-
-            page += 1
-
-            response = requests.get(f"{api}?page={page}&format=json").json()
-            pages, data = response[0]["pages"], response[1]
-
-            result += [
-                {key: value for key, value in item.items() if key in ["date", "value"]}
-                for item in data
-                if item.get("value") is not None
-            ]
-
-        return result
-
-    def get_info():
-        API_BASE_URL = os.getenv("API_BASE_URL")
-        api = f"{API_BASE_URL}/indicator/{indicator}?format=json"
-        return requests.get(api).json()[1][0]
-
-    funcs = {"data": get_data, "info": get_info}
-
     with ThreadPoolExecutor() as executor:
-        futures = {executor.submit(func): name for name, func in funcs.items()}
+        data = executor.submit(get_indicator_data, indicator_id)
+        info = executor.submit(get_indicator_info, indicator_id)
 
-        result = {}
-        for future in as_completed(futures):
-
-            if futures[future] == "data":
-                result["data"] = future.result()
-                continue
-
-            result["title"] = future.result()["name"]
-            result["description"] = future.result()["sourceNote"]
-
-        return result
+        return {
+            "data": data.result(),
+            "title": info.result()["name"],
+            "description": info.result()["sourceNote"],
+        }
 
 
-def write_indicator(indicator: str) -> None:
+def write_indicator(indicator_id: str) -> None:
     """Write title, description, table and chart to page."""
 
-    indicator_data = get_indicator_data(indicator)
-    title, description = indicator_data["title"], indicator_data["description"]
-    chart_data = pd.DataFrame(data=indicator_data["data"])
+    indicator = get_indicator(indicator_id)
+    title, description = indicator["title"], indicator["description"]
+    chart_data = pd.DataFrame(data=indicator["data"])
     table = chart_data.set_index("date").transpose()
 
     st.write(f"### {title}")
@@ -163,13 +161,13 @@ def write_indicator(indicator: str) -> None:
     st.altair_chart(chart, use_container_width=True)
 
 
-def write_topic(title: str, indicators: list[str]) -> None:
+def write_topic(title: str, indicator_ids: list[str]) -> None:
     """Write all indicators from a topic."""
 
     st.title(title)
-    for indicator in indicators:
+    for indicator_id in indicator_ids:
         st.divider()
-        write_indicator(indicator)
+        write_indicator(indicator_id)
 
 
 @functools.cache
