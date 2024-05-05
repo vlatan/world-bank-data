@@ -8,7 +8,6 @@ import altair as alt
 import streamlit as st
 from redis import Redis
 from typing import Callable
-from threading import Thread
 from redis.exceptions import ConnectionError
 from concurrent.futures import ThreadPoolExecutor
 
@@ -71,23 +70,20 @@ def cache_data(ttl: Callable | int) -> Callable:
             # define key expire time
             ex = ttl if isinstance(ttl, int) else 86400
 
-            # if there's no redis client cache in memory with streamlit
+            # if there's no redis client, cache in memory with streamlit
             if not redis_client:
                 cached_func = st.cache_data(ttl=ex, show_spinner="Fetching data...")
                 return cached_func(func)(*args, **kwargs)
 
             # if data in redis return it
-            result = redis_client.get(indicator := args[0])
+            result = redis_client.get(indicator_id := args[0])
             if isinstance(result, (str, bytes, bytearray)):
                 return json.loads(result)
 
             # run the decorated function
             result = func(*args, **kwargs)
-
-            # save the result from decorated function to redis (in a thread)
-            kwargs = dict(name=indicator, value=json.dumps(result), ex=ex)
-            task = Thread(target=redis_client.set, kwargs=kwargs)
-            task.start()
+            # save the result from the decorated function to redis
+            redis_client.set(name=indicator_id, value=json.dumps(result), ex=ex)
 
             return result
 
