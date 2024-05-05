@@ -1,5 +1,6 @@
 import os
 import json
+import asyncio
 import pathlib
 import requests
 import functools
@@ -9,7 +10,6 @@ import streamlit as st
 from redis import Redis
 from typing import Callable
 from redis.exceptions import ConnectionError
-from concurrent.futures import ThreadPoolExecutor
 
 
 def init_redis_client() -> Redis | None:
@@ -95,6 +95,14 @@ def cache_data(ttl: Callable | int) -> Callable:
     return decorator
 
 
+def get_indicator_info(indicator_id: str) -> dict[str, str]:
+    """Get indicator info (title and description)."""
+
+    API_BASE_URL = os.getenv("API_BASE_URL")
+    api = f"{API_BASE_URL}/indicator/{indicator_id}?format=json"
+    return requests.get(api).json()[1][0]
+
+
 def get_indicator_data(indicator_id: str) -> list[dict]:
     """Get numerical data for indicator."""
 
@@ -118,41 +126,40 @@ def get_indicator_data(indicator_id: str) -> list[dict]:
     return result
 
 
-def get_indicator_info(indicator_id: str) -> dict[str, str]:
-    """Get indicator info (title and description)."""
-
-    API_BASE_URL = os.getenv("API_BASE_URL")
-    api = f"{API_BASE_URL}/indicator/{indicator_id}?format=json"
-    return requests.get(api).json()[1][0]
-
-
 @cache_data
 def get_indicator(indicator_id: str) -> dict[str, list[dict] | str]:
     """Get data per indicator from World Bank."""
 
-    with ThreadPoolExecutor() as executor:
-        data = executor.submit(get_indicator_data, indicator_id)
-        info = executor.submit(get_indicator_info, indicator_id)
+    async def get_data() -> tuple[dict[str, str], list[dict]]:
+        return await asyncio.gather(
+            asyncio.to_thread(get_indicator_info, indicator_id),
+            asyncio.to_thread(get_indicator_data, indicator_id),
+        )
 
-        return {
-            "data": data.result(),
-            "title": info.result()["name"],
-            "description": info.result()["sourceNote"],
-        }
+    info, data = asyncio.run(get_data())
+
+    return {
+        "title": info["name"],
+        "description": info["sourceNote"],
+        "data": data,
+    }
 
 
-def write_indicator(indicator_id: str) -> None:
+def write_indicator(title: str, description: str, data: dict) -> None:
     """Write title, description, table and chart to page."""
 
-    indicator = get_indicator(indicator_id)
-    title, description = indicator["title"], indicator["description"]
-    chart_data = pd.DataFrame(data=indicator["data"])
-    table = chart_data.set_index("date").transpose()
-
+    # write title and desc to page
     st.write(f"### {title}")
     st.write(description)
+
+    # convert data to dataframes
+    chart_data = pd.DataFrame(data=data)
+    table = chart_data.set_index("date").transpose()
+
+    # write dataframe table to page
     st.dataframe(table)
 
+    # write chart to page
     chart = alt.Chart(chart_data).mark_area(opacity=0.4).encode(x="date", y="value")
     st.altair_chart(chart, use_container_width=True)
 
@@ -163,7 +170,8 @@ def write_topic(title: str, indicator_ids: list[str]) -> None:
     st.title(title)
     for indicator_id in indicator_ids:
         st.divider()
-        write_indicator(indicator_id)
+        indicator = get_indicator(indicator_id)
+        write_indicator(indicator["title"], indicator["description"], indicator["data"])
 
 
 @functools.cache
