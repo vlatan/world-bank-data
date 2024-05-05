@@ -128,7 +128,10 @@ def get_indicator_data(indicator_id: str) -> list[dict]:
 
 @cache_data
 def get_indicator(indicator_id: str) -> dict[str, list[dict] | str]:
-    """Get data per indicator from World Bank."""
+    """
+    Get data per indicator from World Bank.
+    Concurrently runs two requests.
+    """
 
     async def get_data() -> tuple[dict[str, str], list[dict]]:
         return await asyncio.gather(
@@ -167,10 +170,15 @@ def write_indicator(title: str, description: str, data: dict) -> None:
 def write_topic(title: str, indicator_ids: list[str]) -> None:
     """Write all indicators from a topic."""
 
+    # write topic title to page
     st.title(title)
-    for indicator_id in indicator_ids:
+
+    async def get_indicators() -> list[dict]:
+        tasks = [asyncio.to_thread(get_indicator, iid) for iid in indicator_ids]
+        return await asyncio.gather(*tasks)
+
+    for indicator in asyncio.run(get_indicators()):
         st.divider()
-        indicator = get_indicator(indicator_id)
         write_indicator(indicator["title"], indicator["description"], indicator["data"])
 
 
