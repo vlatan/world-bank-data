@@ -26,16 +26,21 @@ RUN pip install --upgrade pip && \
 # copy all the necessary app files into the working dir
 COPY ./run.py ./
 COPY ./app ./app
-COPY ./.streamlit* ./.streamlit
 
-# defult port env var
-ENV PORT=8501
+# streamlit config options
+# https://docs.streamlit.io/develop/concepts/configuration/options
+ENV PORT=8000
+ENV STREAMLIT_CLIENT_SHOW_ERROR_DETAILS=false \
+    STREAMLIT_CLIENT_TOOLBAR_MODE=minimal \
+    STREAMLIT_SERVER_FILE_WATCHER_TYPE=none \
+    STREAMLIT_SERVER_HEADLESS=true \
+    STREAMLIT_SERVER_RUN_ON_SAVE=false \
+    STREAMLIT_SERVER_ADDRESS=0.0.0.0 \
+    STREAMLIT_SERVER_PORT=${PORT} \
+    STREAMLIT_BROWSER_GATHER_USAGE_STATS=false
 
 # https://docs.docker.com/reference/dockerfile/#healthcheck
 HEALTHCHECK CMD curl --fail http://localhost:${PORT}/_stcore/health
 
 # command to run the streamlit app
-CMD streamlit run run.py \
-    --browser.gatherUsageStats=false \
-    --server.port=${PORT} \
-    --server.address=0.0.0.0
+CMD streamlit run run.py
