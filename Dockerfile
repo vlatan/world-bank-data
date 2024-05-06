@@ -29,6 +29,7 @@ COPY ./app ./app
 
 # streamlit config options
 # https://docs.streamlit.io/develop/concepts/configuration/options
+# https://docs.streamlit.io/develop/api-reference/configuration/config.toml
 ENV PORT=8000
 ENV STREAMLIT_CLIENT_SHOW_ERROR_DETAILS=false \
     STREAMLIT_CLIENT_TOOLBAR_MODE=minimal \
