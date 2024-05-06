@@ -1,7 +1,6 @@
 import os
 import json
 import asyncio
-import pathlib
 import requests
 import functools
 import pandas as pd
@@ -180,9 +179,3 @@ def write_topic(title: str, indicator_ids: list[str]) -> None:
     for indicator in asyncio.run(get_indicators()):
         st.divider()
         write_indicator(indicator["title"], indicator["description"], indicator["data"])
-
-
-@functools.cache
-def get_topics() -> dict[str, list[str]]:
-    topics_file = pathlib.Path(__file__).parent.resolve() / "topics.json"
-    return json.loads(pathlib.Path(topics_file).read_text())
