@@ -162,8 +162,16 @@ def write_indicator(title: str, description: str, data: dict) -> None:
     st.dataframe(table)
 
     # write chart to page
-    chart = alt.Chart(chart_data).mark_area(opacity=0.4).encode(x="date", y="value")
-    st.altair_chart(chart, use_container_width=True)
+    # chart = alt.Chart(chart_data).mark_area(opacity=0.4).encode(x="date", y="value")
+    # st.altair_chart(chart, use_container_width=True)
+
+    st.area_chart(
+        data=chart_data,
+        x="date",
+        y="value",
+        color=(131, 201, 255, 0.4),
+        use_container_width=True,
+    )
 
 
 def write_topic(title: str, indicator_ids: list[str]) -> None:
