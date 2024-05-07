@@ -1,6 +1,5 @@
 import json
 import pathlib
-import functools
 import streamlit as st
 import functools as ft
 from .intro import intro
