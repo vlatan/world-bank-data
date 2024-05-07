@@ -19,8 +19,7 @@ def create_app() -> None:
 
     topics = sb.get_topics()
     options = sb.make_options(topics)
-    current_topic = sb.get_topic_from_query_params(options)
-    index = list(options.keys()).index(current_topic)
+    index = sb.get_topic_index(list(options.keys()))
 
     # render select box
     if selected_topic := st.sidebar.selectbox(

@@ -33,18 +33,24 @@ def make_options(topics: dict[str, list]) -> dict[str, Callable]:
     return options
 
 
-def get_topic_from_query_params(options: dict[str, Callable]) -> str:
-    """Gets the current topic from a 'topic' url query parameter."""
+def get_topic_index(options: list[str]) -> int:
+    """
+    Get the current topic from a 'topic' url query parameter
+    and determine its index in the options dictionary keys.
+    """
 
+    # if NO "topic" URL query parameters at all, index is zero, meaning home
     if not (query_params := st.query_params.get_all("topic")):
         st.query_params.clear()
-        return "Home"
+        return 0  # Home
 
-    if (topic := query_params[0].capitalize()) not in options.keys():
+    # if "topic" URL query parameter is not in the options, index is zero, meaning home
+    if (topic := query_params[0].capitalize()) not in options:
         st.query_params.clear()
-        return "Home"
+        return 0  # Home
 
-    return topic
+    # return the topic index
+    return options.index(topic)
 
 
 def update_query_params() -> None:
