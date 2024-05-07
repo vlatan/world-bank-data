@@ -36,9 +36,14 @@ def make_options(topics: dict[str, list]) -> dict[str, Callable]:
 def get_topic_from_query_params(options: dict[str, Callable]) -> str:
     """Gets the current topic from a 'topic' url query parameter."""
 
-    query_params = st.query_params.get_all("topic")
-    topic = query_params[0].capitalize() if query_params else "Home"
-    topic = topic if topic in options.keys() else "Home"
+    if not (query_params := st.query_params.get_all("topic")):
+        st.query_params.clear()
+        return "Home"
+
+    if (topic := query_params[0].capitalize()) not in options.keys():
+        st.query_params.clear()
+        return "Home"
+
     return topic
 
 
@@ -48,11 +53,9 @@ def update_query_params() -> None:
     based on the streamlit session state.
     """
 
-    if not st.session_state.topic:
-        return
+    st.query_params.clear()
 
     if st.session_state.topic == "Home":
-        st.query_params.clear()
         return
 
     st.query_params.topic = st.session_state.topic.lower()
