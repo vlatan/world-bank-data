@@ -22,13 +22,13 @@ def make_options(topics: dict[str, list]) -> dict[str, Callable]:
     """
 
     options = {}
-    for title, indicators in topics.items():
+    for title, indicator_ids in topics.items():
 
         if (title := title.capitalize()) == "Home":
             options[title] = intro
             continue
 
-        options[title] = ft.partial(write_topic, title, indicators)
+        options[title] = ft.partial(write_topic, title, indicator_ids)
 
     return options
 
