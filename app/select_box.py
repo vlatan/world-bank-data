@@ -8,12 +8,13 @@ from typing import Callable
 from .utils import write_topic
 
 
-@functools.cache
+@st.cache_data
 def get_topics() -> dict[str, list[str]]:
     topics_file = pathlib.Path(__file__).parent.resolve() / "topics.json"
     return json.loads(pathlib.Path(topics_file).read_text())
 
 
+@st.cache_data
 def make_options(topics: dict[str, list]) -> dict[str, Callable]:
     """
     Constructs a dictionary with key 'topic'
