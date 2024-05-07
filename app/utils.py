@@ -4,13 +4,13 @@ import asyncio
 import requests
 import functools
 import pandas as pd
-import altair as alt
 import streamlit as st
 from redis import Redis
 from typing import Callable
 from redis.exceptions import ConnectionError
 
 
+# @st.cache_resource
 def init_redis_client() -> Redis | None:
     """Initialize Redis client."""
 
@@ -133,10 +133,10 @@ def get_indicator(indicator_id: str) -> dict[str, list[dict] | str]:
     """
 
     async def get_data() -> tuple[dict[str, str], list[dict]]:
-        return await asyncio.gather(
-            asyncio.to_thread(get_indicator_info, indicator_id),
-            asyncio.to_thread(get_indicator_data, indicator_id),
-        )
+        async with asyncio.TaskGroup() as tg:
+            t1 = tg.create_task(asyncio.to_thread(get_indicator_info, indicator_id))
+            t2 = tg.create_task(asyncio.to_thread(get_indicator_data, indicator_id))
+        return t1.result(), t2.result()
 
     info, data = asyncio.run(get_data())
 
@@ -162,6 +162,7 @@ def write_indicator(title: str, description: str, data: dict) -> None:
     st.dataframe(table)
 
     # write chart to page
+    # import altair as alt
     # chart = alt.Chart(chart_data).mark_area(opacity=0.4).encode(x="date", y="value")
     # st.altair_chart(chart, use_container_width=True)
 
@@ -181,8 +182,10 @@ def write_topic(title: str, indicator_ids: list[str]) -> None:
     st.title(title)
 
     async def get_indicators() -> list[dict]:
-        tasks = [asyncio.to_thread(get_indicator, iid) for iid in indicator_ids]
-        return await asyncio.gather(*tasks)
+        async with asyncio.TaskGroup() as tg:
+            coros = [asyncio.to_thread(get_indicator, iid) for iid in indicator_ids]
+            tasks = [tg.create_task(coro) for coro in coros]
+        return [task.result() for task in tasks]
 
     for indicator in asyncio.run(get_indicators()):
         st.divider()
