@@ -142,7 +142,7 @@ def get_indicator(indicator_id: str) -> dict[str, list[dict] | str]:
 
     return {
         "title": info["name"],
-        "description": info["sourceNote"].replace("$", "\$"),  # type: ignore
+        "description": info["sourceNote"].replace("$", "\\$"),
         "data": data,
     }
 
