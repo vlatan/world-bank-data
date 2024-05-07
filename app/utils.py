@@ -10,7 +10,7 @@ from typing import Callable
 from redis.exceptions import ConnectionError
 
 
-# @st.cache_resource
+@st.cache_resource
 def init_redis_client() -> Redis | None:
     """Initialize Redis client."""
 

@@ -1,5 +1,9 @@
 import streamlit as st
 from dotenv import load_dotenv
+
+# meta title - set_page_config needs to be called first in the page
+st.set_page_config(page_title="Data Indicators - North Macedonia")
+
 from . import select_box as sb
 
 
@@ -9,9 +13,6 @@ load_dotenv()
 
 def create_app() -> None:
     """Create streamlit application"""
-
-    # meta title
-    st.set_page_config(page_title="Data Indicators - North Macedonia")
 
     # cursor pointer on dropdown select
     custom_style = "<style>div[data-baseweb='select']>div:hover{cursor:pointer}</style>"
