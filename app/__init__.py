@@ -1,4 +1,5 @@
 import streamlit as st
+from . import options as op
 from dotenv import load_dotenv
 
 
@@ -16,11 +17,9 @@ def create_app() -> None:
     custom_style = "<style>div[data-baseweb='select']>div:hover{cursor:pointer}</style>"
     st.markdown(custom_style, unsafe_allow_html=True)
 
-    from . import select_box as sb
-
-    topics = sb.get_topics()
-    options = sb.make_options(topics)
-    index = sb.get_topic_index(list(options.keys()))
+    topics = op.get_topics()
+    options = op.make_options(topics)
+    index = op.get_topic_index(list(options.keys()))
 
     # render select box
     if selected_topic := st.sidebar.selectbox(
@@ -29,6 +28,6 @@ def create_app() -> None:
         placeholder="Choose a Topic",
         index=index,
         key="topic",
-        on_change=sb.update_query_params,
+        on_change=op.update_query_params,
     ):
         options[selected_topic]()

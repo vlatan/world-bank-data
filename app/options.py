@@ -7,13 +7,13 @@ from typing import Callable
 from .utils import write_topic
 
 
-@st.cache_data
+@st.cache_data(show_spinner="Fetching topics...")
 def get_topics() -> dict[str, list[str]]:
     topics_file = pathlib.Path(__file__).parent.resolve() / "topics.json"
     return json.loads(pathlib.Path(topics_file).read_text())
 
 
-@st.cache_data
+@st.cache_data(show_spinner="Fetching options...")
 def make_options(topics: dict[str, list]) -> dict[str, Callable]:
     """
     Constructs a dictionary with key 'topic'
