@@ -15,7 +15,7 @@ class Indicator:
         self.ttl = ttl
 
     @st.cache_resource
-    # _self begins with undersocer streamlit to able to cache the client
+    # _self begins with underscore so streamlit can cache the client
     def init_redis_client(_self) -> Redis:
         """Initialize Redis client."""
 
