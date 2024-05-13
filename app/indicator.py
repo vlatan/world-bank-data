@@ -53,7 +53,10 @@ class Indicator:
         If not hit the API and save the result to Redis cache.
         """
 
-        result = self.redis_client.get(self.indicator_id)
+        # thr key is country code and indicator
+        redis_key = f"{self.country_code}:{self.indicator_id}"
+
+        result = self.redis_client.get(redis_key)
         if isinstance(result, (str, bytes, bytearray)):
             return json.loads(result)
 
@@ -65,7 +68,5 @@ class Indicator:
             "data": data,
         }
 
-        self.redis_client.set(
-            name=self.indicator_id, value=json.dumps(result), ex=self.ttl
-        )
+        self.redis_client.set(name=redis_key, value=json.dumps(result), ex=self.ttl)
         return result
