@@ -3,12 +3,12 @@ import json
 import asyncio
 import requests
 import streamlit as st
+from . import constants as co
 
 
 class Indicator:
-    def __init__(self, indicator_id: str, ttl: int = 86400):
-        self.country_code = os.getenv("COUNTRY_CODE", "mk")
-        self.api_base_url = os.getenv("API_BASE_URL")
+    def __init__(self, indicator_id: str, country_code: str = "USA", ttl: int = 86400):
+        self.country_code = country_code
         self.redis_client = st.session_state.redis_client
         self.indicator_id = indicator_id
         self.ttl = ttl
@@ -16,19 +16,19 @@ class Indicator:
     def get_indicator_info(self) -> dict[str, str]:
         """Get indicator info (title and description)."""
 
-        api = f"{self.api_base_url}/indicator/{self.indicator_id}?format=json"
-        return requests.get(api).json()[1][0]
+        url = f"{co.API_BASE_URL}/indicator/{self.indicator_id}"
+        return requests.get(url, params={"format": "json"}).json()[1][0]
 
     def get_indicator_data(self) -> list[dict]:
         """Get numerical data for indicator."""
 
         page, pages, result = 0, 1, []
-        api = f"{self.api_base_url}/country/{self.country_code}/indicator/{self.indicator_id}"
+        url = f"{co.API_BASE_URL}/country/{self.country_code}/indicator/{self.indicator_id}"
 
         while page < pages:
             page += 1
 
-            response = requests.get(f"{api}?page={page}&format=json").json()
+            response = requests.get(url, params={"page": page, "format": "json"}).json()
             pages, data = response[0]["pages"], response[1]
 
             result += [

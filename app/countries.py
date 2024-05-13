@@ -1,19 +1,23 @@
 import json
 import asyncio
 import requests
+import functools
 import streamlit as st
+from . import constants as co
 
 
 class Countries:
     def __init__(self, ttl: int = 86400):
-        self.url = f"https://api.worldbank.org/v2/country?format=json"
         self.redis_client = st.session_state.redis_client
         self.ttl = ttl
 
     async def _get(self) -> dict[str, str]:
         """Get country names and codes."""
 
-        response = requests.get(self.url).json()
+        url = f"{co.API_BASE_URL}/country"
+        get_data = functools.partial(requests.get, url, params={"format": "json"})
+
+        response = get_data().json()
         pages, result = response[0]["pages"], response[1]
 
         result = {item["name"]: item["id"] for item in result}
@@ -23,7 +27,7 @@ class Countries:
 
         async with asyncio.TaskGroup() as tg:
             coros = [
-                asyncio.to_thread(requests.get, self.url, params={"page": page})
+                asyncio.to_thread(get_data, params={"page": page, "format": "json"})
                 for page in range(2, pages + 1)
             ]
             tasks = [tg.create_task(coro) for coro in coros]
