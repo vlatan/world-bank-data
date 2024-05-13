@@ -13,13 +13,13 @@ class Indicator:
         self.indicator_id = indicator_id
         self.ttl = ttl
 
-    def get_indicator_info(self) -> dict[str, str]:
+    def get_info(self) -> dict[str, str]:
         """Get indicator info (title and description)."""
 
         url = f"{co.API_BASE_URL}/indicator/{self.indicator_id}"
         return requests.get(url, params={"format": "json"}).json()[1][0]
 
-    def get_indicator_data(self) -> list[dict]:
+    def get_data(self) -> list[dict]:
         """Get numerical data for indicator."""
 
         page, pages, result = 0, 1, []
@@ -39,15 +39,15 @@ class Indicator:
 
         return result
 
-    async def _get_indicator(self) -> tuple[dict[str, str], list[dict]]:
+    async def _get(self) -> tuple[dict[str, str], list[dict]]:
         """Concurrently get indicator info and data from two ednpoints."""
 
         async with asyncio.TaskGroup() as tg:
-            t1 = tg.create_task(asyncio.to_thread(self.get_indicator_info))
-            t2 = tg.create_task(asyncio.to_thread(self.get_indicator_data))
+            t1 = tg.create_task(asyncio.to_thread(self.get_info))
+            t2 = tg.create_task(asyncio.to_thread(self.get_data))
         return t1.result(), t2.result()
 
-    def get_indicator(self) -> dict[str, list[dict] | str]:
+    def get(self) -> dict[str, list[dict] | str]:
         """
         Get from Redis cache the indicator info and data if available.
         If not hit the API and save the result to Redis cache.
@@ -57,7 +57,7 @@ class Indicator:
         if isinstance(result, (str, bytes, bytearray)):
             return json.loads(result)
 
-        info, data = asyncio.run(self._get_indicator())
+        info, data = asyncio.run(self._get())
 
         result = {
             "title": info["name"],

@@ -9,7 +9,7 @@ async def get_indicators(indicator_ids: list[str]) -> list[dict]:
 
     async with asyncio.TaskGroup() as tg:
         indicators = [Indicator(iid) for iid in indicator_ids]
-        coros = [asyncio.to_thread(ind.get_indicator) for ind in indicators]
+        coros = [asyncio.to_thread(ind.get) for ind in indicators]
         tasks = [tg.create_task(coro) for coro in coros]
 
     return [task.result() for task in tasks]
