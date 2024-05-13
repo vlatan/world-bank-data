@@ -2,7 +2,6 @@ import json
 import asyncio
 import requests
 import streamlit as st
-from redis import Redis
 
 
 class Countries:
