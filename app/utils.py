@@ -2,6 +2,7 @@ import asyncio
 import pandas as pd
 import streamlit as st
 from .indicator import Indicator
+from .countries import Countries
 
 
 async def get_indicators(indicator_ids: list[str]) -> list[dict]:
@@ -21,6 +22,19 @@ def write_indicator(title: str, description: str, data: dict) -> None:
     # write title and desc to page
     st.write(f"### {title}")
     st.write(description)
+
+    # get all countries
+    coutries = Countries().get()
+
+    selected_countries = st.multiselect(
+        label="Choose country/region",
+        options=coutries.keys(),
+        default=["United States"],
+        key=title,
+    )
+
+    if not selected_countries:
+        st.error("Please select at least one country/region.")
 
     # convert data to dataframes
     chart_data = pd.DataFrame(data=data)
