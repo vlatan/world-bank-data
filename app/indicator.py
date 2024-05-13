@@ -3,27 +3,15 @@ import json
 import asyncio
 import requests
 import streamlit as st
-from redis import Redis
 
 
 class Indicator:
     def __init__(self, indicator_id: str, ttl: int = 86400):
         self.country_code = os.getenv("COUNTRY_CODE", "mk")
         self.api_base_url = os.getenv("API_BASE_URL")
-        self.redis_client = self.init_redis_client()
+        self.redis_client = st.session_state.redis_client
         self.indicator_id = indicator_id
         self.ttl = ttl
-
-    @st.cache_resource
-    # _self begins with underscore so streamlit can cache the client
-    def init_redis_client(_self) -> Redis:
-        """Initialize Redis client."""
-
-        return Redis(
-            host=os.getenv("REDIS_HOST", "localhost"),
-            password=os.getenv("REDIS_PASSWORD"),
-            client_name="indicator",
-        )
 
     def get_indicator_info(self) -> dict[str, str]:
         """Get indicator info (title and description)."""
@@ -46,7 +34,7 @@ class Indicator:
             result += [
                 {key: value for key, value in item.items() if key in ["date", "value"]}
                 for item in data
-                if item.get("value") is not None
+                # if item.get("value") is not None
             ]
 
         return result
