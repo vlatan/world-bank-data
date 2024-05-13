@@ -63,6 +63,7 @@ class Indicator:
         info, data = asyncio.run(self._get())
 
         result = {
+            "country_code": self.country_code,
             "title": info["name"],
             "description": info["sourceNote"].replace("$", "\\$"),
             "data": data,

@@ -16,45 +16,65 @@ async def get_indicators(indicator_ids: list[str]) -> list[dict]:
     return [task.result() for task in tasks]
 
 
-def write_indicator(title: str, description: str, data: dict) -> None:
+@st.cache_data
+def lookup_country_name(_countries: dict[str, str], code: str):
+    for name, current_code in _countries.items():
+        if code == current_code:
+            return name
+
+
+def write_indicator(indicator: dict) -> None:
     """Write title, description, table and chart to page."""
+
+    country_code = indicator["country_code"]
+    title = indicator["title"]
+    description = indicator["description"]
+    data = indicator["data"]
+
+    # get all countries
+    countries = Countries().get()
+    country_name = lookup_country_name(countries, country_code)
 
     # write title and desc to page
     st.write(f"### {title}")
     st.write(description)
 
-    # get all countries
-    coutries = Countries().get()
-
-    selected_countries = st.multiselect(
-        label="Choose country/region",
-        options=coutries.keys(),
-        default=["United States"],
+    # select a country from multiselect
+    selected = st.multiselect(
+        label="Choose countries",
+        options=countries.keys(),
+        default=[country_name],
         key=title,
     )
 
-    if not selected_countries:
+    if not selected:
         st.error("Please select at least one country/region.")
 
-    # convert data to dataframes
-    chart_data = pd.DataFrame(data=data)
-    table = chart_data.set_index("date").transpose()
+    elif len(selected) == 1 and selected[0] == country_name:
+        # TODO: Incorporate country name or code in the table/chart
 
-    # write dataframe table to page
-    st.dataframe(table)
+        # convert data to dataframes
+        chart_data = pd.DataFrame(data=data)
+        table = chart_data.set_index("date").transpose()
 
-    # write chart to page
-    # import altair as alt
-    # chart = alt.Chart(chart_data).mark_area(opacity=0.4).encode(x="date", y="value")
-    # st.altair_chart(chart, use_container_width=True)
+        # write dataframe table to page
+        st.dataframe(table)
 
-    st.area_chart(
-        data=chart_data,
-        x="date",
-        y="value",
-        color=(131, 201, 255, 0.4),
-        use_container_width=True,
-    )
+        # write chart to page
+        # import altair as alt
+        # chart = alt.Chart(chart_data).mark_area(opacity=0.4).encode(x="date", y="value")
+        # st.altair_chart(chart, use_container_width=True)
+
+        st.area_chart(
+            data=chart_data,
+            x="date",
+            y="value",
+            color=(131, 201, 255, 0.4),
+            use_container_width=True,
+        )
+    else:
+        # TODO: Add country or countries to table and chart
+        pass
 
 
 def write_topic(title: str, indicator_ids: list[str]) -> None:
@@ -66,4 +86,4 @@ def write_topic(title: str, indicator_ids: list[str]) -> None:
     indicators = get_indicators(indicator_ids)
     for indicator in asyncio.run(indicators):
         st.divider()
-        write_indicator(indicator["title"], indicator["description"], indicator["data"])
+        write_indicator(indicator)
