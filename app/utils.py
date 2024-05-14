@@ -18,6 +18,17 @@ async def get_indicators(indicator_ids: list[str]) -> list[dict]:
     return [task.result() for task in tasks]
 
 
+async def get_countries_data(country_codes: list[str], indicator_id: str) -> list[dict]:
+    """Concurrently get multiple countries data for a given indicator."""
+
+    async with asyncio.TaskGroup() as tg:
+        indicators = [Indicator(indicator_id, cc) for cc in country_codes]
+        coros = [asyncio.to_thread(ind.get) for ind in indicators]
+        tasks = [tg.create_task(coro) for coro in coros]
+
+    return [task.result() for task in tasks]
+
+
 @st.cache_data
 def lookup_country_name(_countries: dict[str, str], code: str):
     for name, current_code in _countries.items():
@@ -25,17 +36,41 @@ def lookup_country_name(_countries: dict[str, str], code: str):
             return name
 
 
+def chart_data(data: list[dict], country_codes: list[str]) -> None:
+    """Write table and chart to page given the data and country codes."""
+
+    # convert data to dataframe
+    df = pd.DataFrame(data, country_codes)
+    df.index.name = "Region"
+
+    # write dataframe to page
+    st.dataframe(df)
+
+    # melt data to display on chart
+    df = df.transpose().reset_index()
+    df = pd.melt(df, id_vars=["index"]).rename(
+        columns={"index": "Year", "value": "Value"}
+    )
+    chart = (
+        alt.Chart(df)
+        .mark_area(opacity=0.3)
+        .encode(x="Year:T", y=alt.Y("Value:Q", stack=None), color="Region:N")
+    )
+    st.altair_chart(chart, use_container_width=True)
+
+
 def write_indicator(indicator: dict) -> None:
     """Write title, description, table and chart to page."""
 
-    country_code = indicator["country_code"]
+    indicator_id = indicator["id"]
     title = indicator["title"]
     description = indicator["description"]
-    data = indicator["data"]
 
     # get all countries
     countries = Countries().get()
-    country_name = lookup_country_name(countries, country_code)
+    default_country_code = indicator["country_code"]
+    default_country_name = lookup_country_name(countries, default_country_code)
+    default_data = indicator["data"]
 
     # write title and desc to page
     st.write(f"### {title}")
@@ -45,7 +80,7 @@ def write_indicator(indicator: dict) -> None:
     selected = st.multiselect(
         label="Choose countries",
         options=countries.keys(),
-        default=[country_name],
+        default=[default_country_name],
         key=title,
     )
 
@@ -53,32 +88,16 @@ def write_indicator(indicator: dict) -> None:
         st.error("Please select at least one country/region.")
 
     # default country on first load
-    elif len(selected) == 1 and selected[0] == country_name:
-        # convert data to dataframe
-        df = pd.DataFrame([data], [country_code])
-        df.index.name = "Region"
+    elif len(selected) == 1 and selected[0] == default_country_name:
+        chart_data([default_data], [default_country_code])
 
-        # write dataframe to page
-        st.dataframe(df)
-
-        # melt data to display on chart
-        df = df.transpose().reset_index()
-        df = pd.melt(df, id_vars=["index"]).rename(
-            columns={"index": "Year", "value": "Value"}
-        )
-        chart = (
-            alt.Chart(df)
-            .mark_area(opacity=0.3)
-            .encode(x="Year:T", y="Value:Q", color="Region:N")
-        )
-        st.altair_chart(chart, use_container_width=True)
+    # include/exclude countries
     else:
-        # TODO: Add country or countries to table and chart
-        # Get indocators concurretnly for selected countries, exclude default
-        # because we already have those from the initial page load
-        # add country data to df
-        # df = pd.DataFrame([data_1, data_2], index=[country_code_1, country_code_2])
-        pass
+        country_codes = [countries[country_name] for country_name in selected]
+        result = asyncio.run(get_countries_data(country_codes, indicator_id))
+        data = [item["data"] for item in result]
+
+        chart_data(data, country_codes)
 
 
 def write_topic(title: str, indicator_ids: list[str]) -> None:
