@@ -1,7 +1,5 @@
-import os
 import json
 import asyncio
-from textwrap import indent
 import requests
 import streamlit as st
 from . import constants as co
@@ -35,7 +33,7 @@ class Indicator:
             for item in data:
                 result[item["date"]] = item["value"]
 
-        return result
+        return dict(sorted(result.items()))
 
     async def _get(self) -> tuple[dict[str, str], dict[str, str]]:
         """Concurrently get indicator info and data from two ednpoints."""
@@ -62,8 +60,8 @@ class Indicator:
 
         result = {
             "country_code": self.country_code,
-            "title": info["name"],
-            "description": info["sourceNote"].replace("$", "\\$"),
+            "title": info["name"].strip(),
+            "description": info["sourceNote"].strip().replace("$", "\\$"),
             "data": data,
         }
 

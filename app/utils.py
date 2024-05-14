@@ -1,3 +1,4 @@
+import re
 import asyncio
 import pandas as pd
 import altair as alt
@@ -54,31 +55,29 @@ def write_indicator(indicator: dict) -> None:
     # default country on first load
     elif len(selected) == 1 and selected[0] == country_name:
         # convert data to dataframe
-        df = (
-            pd.DataFrame({country_code: data.values()}, index=data.keys())
-            .sort_index()
-            .transpose()
-        )
-
+        df = pd.DataFrame([data], [country_code])
         df.index.name = "Region"
+
+        # write dataframe to page
         st.dataframe(df)
 
-        data = df.transpose().reset_index()
-        data = pd.melt(data, id_vars=["index"]).rename(
-            columns={"index": "year", "value": title}
+        # melt data to display on chart
+        df = df.transpose().reset_index()
+        df = pd.melt(df, id_vars=["index"]).rename(
+            columns={"index": "Year", "value": "Value"}
         )
         chart = (
-            alt.Chart(data)
+            alt.Chart(df)
             .mark_area(opacity=0.3)
-            .encode(
-                x="year:T",
-                y=alt.Y(f"{title}:Q", stack=None),
-                color="Region:N",
-            )
+            .encode(x="Year:T", y="Value:Q", color="Region:N")
         )
         st.altair_chart(chart, use_container_width=True)
     else:
         # TODO: Add country or countries to table and chart
+        # Get indocators concurretnly for selected countries, exclude default
+        # because we already have those from the initial page load
+        # add country data to df
+        # df = pd.DataFrame([data_1, data_2], index=[country_code_1, country_code_2])
         pass
 
 
