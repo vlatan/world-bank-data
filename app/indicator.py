@@ -1,6 +1,7 @@
 import os
 import json
 import asyncio
+from textwrap import indent
 import requests
 import streamlit as st
 from . import constants as co
@@ -19,10 +20,10 @@ class Indicator:
         url = f"{co.API_BASE_URL}/indicator/{self.indicator_id}"
         return requests.get(url, params={"format": "json"}).json()[1][0]
 
-    def get_data(self) -> list[dict]:
+    def get_data(self) -> dict[str, str]:
         """Get numerical data for indicator."""
 
-        page, pages, result = 0, 1, []
+        page, pages, result = 0, 1, {}
         url = f"{co.API_BASE_URL}/country/{self.country_code}/indicator/{self.indicator_id}"
 
         while page < pages:
@@ -31,15 +32,12 @@ class Indicator:
             response = requests.get(url, params={"page": page, "format": "json"}).json()
             pages, data = response[0]["pages"], response[1]
 
-            result += [
-                {key: value for key, value in item.items() if key in ["date", "value"]}
-                for item in data
-                # if item.get("value") is not None
-            ]
+            for item in data:
+                result[item["date"]] = item["value"]
 
         return result
 
-    async def _get(self) -> tuple[dict[str, str], list[dict]]:
+    async def _get(self) -> tuple[dict[str, str], dict[str, str]]:
         """Concurrently get indicator info and data from two ednpoints."""
 
         async with asyncio.TaskGroup() as tg:

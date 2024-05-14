@@ -1,5 +1,6 @@
 import asyncio
 import pandas as pd
+import altair as alt
 import streamlit as st
 from .indicator import Indicator
 from .countries import Countries
@@ -50,28 +51,32 @@ def write_indicator(indicator: dict) -> None:
     if not selected:
         st.error("Please select at least one country/region.")
 
+    # default country on first load
     elif len(selected) == 1 and selected[0] == country_name:
-        # TODO: Incorporate country name or code in the table/chart
-
-        # convert data to dataframes
-        chart_data = pd.DataFrame(data=data)
-        table = chart_data.set_index("date").transpose()
-
-        # write dataframe table to page
-        st.dataframe(table)
-
-        # write chart to page
-        # import altair as alt
-        # chart = alt.Chart(chart_data).mark_area(opacity=0.4).encode(x="date", y="value")
-        # st.altair_chart(chart, use_container_width=True)
-
-        st.area_chart(
-            data=chart_data,
-            x="date",
-            y="value",
-            color=(131, 201, 255, 0.4),
-            use_container_width=True,
+        # convert data to dataframe
+        df = (
+            pd.DataFrame({country_code: data.values()}, index=data.keys())
+            .sort_index()
+            .transpose()
         )
+
+        df.index.name = "Region"
+        st.dataframe(df)
+
+        data = df.T.reset_index()
+        data = pd.melt(data, id_vars=["index"]).rename(
+            columns={"index": "year", "value": title}
+        )
+        chart = (
+            alt.Chart(data)
+            .mark_area(opacity=0.3)
+            .encode(
+                x="year:T",
+                y=alt.Y(f"{title}:Q", stack=None),
+                color="Region:N",
+            )
+        )
+        st.altair_chart(chart, use_container_width=True)
     else:
         # TODO: Add country or countries to table and chart
         pass
