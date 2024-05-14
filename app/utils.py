@@ -63,7 +63,7 @@ def write_indicator(indicator: dict) -> None:
         df.index.name = "Region"
         st.dataframe(df)
 
-        data = df.T.reset_index()
+        data = df.transpose().reset_index()
         data = pd.melt(data, id_vars=["index"]).rename(
             columns={"index": "year", "value": title}
         )
