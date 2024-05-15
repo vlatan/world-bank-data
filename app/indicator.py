@@ -53,7 +53,7 @@ class Indicator:
         If not hit the API and save the result to Redis cache.
         """
 
-        # thr key is country code and indicator
+        # the key is country code and indicator
         redis_key = f"{self.country_code}:{self.indicator_id}"
 
         result = self.redis_client.get(redis_key)
