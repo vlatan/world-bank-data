@@ -13,10 +13,7 @@ def create_app() -> None:
     """Create streamlit application"""
 
     # meta title - set_page_config needs to be called first in the page
-    st.set_page_config(
-        page_title="Data Indicators",
-        initial_sidebar_state="expanded",
-    )
+    st.set_page_config(page_title="Data Indicators", initial_sidebar_state="expanded")
 
     # cursor pointer on dropdown select
     custom_style = "<style>div[data-baseweb='select']>div:hover{cursor:pointer}</style>"
