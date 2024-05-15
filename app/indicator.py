@@ -34,7 +34,8 @@ class Indicator:
                 continue
 
             for item in data:
-                result[item["date"]] = item["value"]
+                if value := item.get("value"):
+                    result[item["date"]] = value
 
         return dict(sorted(result.items()))
 
