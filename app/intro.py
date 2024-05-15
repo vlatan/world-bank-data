@@ -3,7 +3,7 @@ import streamlit as st
 
 def intro() -> None:
 
-    st.title("Welcome to North Macedonia's Data")
+    st.title("World Bank Data - Overview")
     st.write(
         """
         Lorem Ipsum is simply dummy text of the printing and typesetting industry. 
