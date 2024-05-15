@@ -95,17 +95,15 @@ def write_indicator(indicator: dict) -> None:
 
     # include/exclude countries
     else:
-        country_codes = {countries[cn]: cn for cn in selected}
-        result = asyncio.run(get_countries_data(country_codes.keys(), indicator_id))
+        country_codes = {countries[cn] for cn in selected}
+        result = asyncio.run(get_countries_data(country_codes, indicator_id))
         result = [item for item in result if item.get("data")]
 
         data = [item["data"] for item in result]
         chart_country_codes = [item["country_code"] for item in result]
 
         if missing := set(country_codes) - set(chart_country_codes):
-            missing_names = [country_codes[cc] for cc in missing]
-            missing_names = ", ".join(missing)
-            st.error(f"Couldn't fetch results for {missing_names}.")
+            st.error(f"Couldn't fetch results for {", ".join(missing)}.")
         chart_data(data, chart_country_codes)
 
 
