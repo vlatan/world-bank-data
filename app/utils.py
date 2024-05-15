@@ -1,4 +1,5 @@
 import asyncio
+import random
 import pandas as pd
 import altair as alt
 import streamlit as st
@@ -38,12 +39,20 @@ def lookup_country_name(_countries: dict[str, str], code: str):
             return name
 
 
-def chart_data(data: list[dict], country_codes: list[str]) -> None:
+def chart_data(title: str, data: list[dict], country_codes: list[str]) -> None:
     """Write table and chart to page given the data and country codes."""
 
     # convert data to dataframe
     df = pd.DataFrame(data, country_codes)
+    df = df.reindex(sorted(df.columns), axis=1)
     df.index.name = "Region"
+
+    time_range = st.select_slider(
+        label="Select a range:",
+        options=df.columns,
+        value=(df.columns[0], df.columns[-1]),
+        key=f"slider.{title.lower()}",
+    )
 
     # write dataframe to page
     st.dataframe(df)
@@ -91,7 +100,7 @@ def write_indicator(indicator: dict) -> None:
 
     # default country on first load
     elif len(selected) == 1 and selected[0] == default_country_name:
-        chart_data([default_data], [default_country_code])
+        chart_data(title, [default_data], [default_country_code])
 
     # include/exclude countries
     else:
@@ -104,7 +113,7 @@ def write_indicator(indicator: dict) -> None:
 
         if missing := set(country_codes) - set(chart_country_codes):
             st.error(f"Couldn't fetch results for {", ".join(missing)}.")
-        chart_data(data, chart_country_codes)
+        chart_data(title, data, chart_country_codes)
 
 
 def write_topic(title: str, indicator_ids: list[str]) -> None:
