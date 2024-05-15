@@ -30,6 +30,9 @@ class Indicator:
             response = requests.get(url, params={"page": page, "format": "json"}).json()
             pages, data = response[0]["pages"], response[1]
 
+            if not data:
+                continue
+
             for item in data:
                 result[item["date"]] = item["value"]
 
