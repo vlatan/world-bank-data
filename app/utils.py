@@ -1,8 +1,8 @@
-import re
 import asyncio
 import pandas as pd
 import altair as alt
 import streamlit as st
+from typing import Iterable
 from .indicator import Indicator
 from .countries import Countries
 
@@ -18,7 +18,9 @@ async def get_indicators(indicator_ids: list[str]) -> list[dict]:
     return [task.result() for task in tasks]
 
 
-async def get_countries_data(country_codes: list[str], indicator_id: str) -> list[dict]:
+async def get_countries_data(
+    country_codes: Iterable[str], indicator_id: str
+) -> list[dict]:
     """Concurrently get multiple countries data for a given indicator."""
 
     async with asyncio.TaskGroup() as tg:
@@ -93,15 +95,17 @@ def write_indicator(indicator: dict) -> None:
 
     # include/exclude countries
     else:
-        country_codes = [countries[country_name] for country_name in selected]
-        result = asyncio.run(get_countries_data(country_codes, indicator_id))
-        result = [item for item in result if item["data"]]
+        country_codes = {countries[cn]: cn for cn in selected}
+        result = asyncio.run(get_countries_data(country_codes.keys(), indicator_id))
+        result = [item for item in result if item.get("data")]
+
         data = [item["data"] for item in result]
         chart_country_codes = [item["country_code"] for item in result]
-        missing = set(country_codes) - set(chart_country_codes)
-        if missing:
-            missing = ", ".join(missing)
-            st.error(f"Couldn't fetch results for {missing}.")
+
+        if missing := set(country_codes) - set(chart_country_codes):
+            missing_names = [country_codes[cc] for cc in missing]
+            missing_names = ", ".join(missing)
+            st.error(f"Couldn't fetch results for {missing_names}.")
         chart_data(data, chart_country_codes)
 
 
