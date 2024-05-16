@@ -115,7 +115,7 @@ def write_indicator(indicator: dict) -> None:
         chart_country_codes = [item["country_code"] for item in result]
 
         if missing := set(country_codes) - set(chart_country_codes):
-            st.error(f"Couldn't fetch results for {", ".join(missing)}.")
+            st.error(f"Couldn't fetch results for {", ".join(missing)} right now.")
         chart_data(title, data, chart_country_codes)
 
 
