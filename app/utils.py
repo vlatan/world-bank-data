@@ -32,7 +32,7 @@ async def get_countries_data(
     return [task.result() for task in tasks]
 
 
-@st.cache_data
+@st.cache_data(show_spinner=False)
 def lookup_country_name(_countries: dict[str, str], code: str):
     for name, current_code in _countries.items():
         if code == current_code:
@@ -40,13 +40,14 @@ def lookup_country_name(_countries: dict[str, str], code: str):
 
 
 def chart_data(title: str, data: list[dict], country_codes: list[str]) -> None:
-    """Write table and chart to page given the data and country codes."""
+    """Write slider, table and chart to page given the data and country codes."""
 
     # convert data to dataframe
     df = pd.DataFrame(data, country_codes)
     df = df.reindex(sorted(df.columns), axis=1)
     df.index.name = "Region"
 
+    # display time range slider
     time_range = st.select_slider(
         label="Select a range:",
         options=df.columns,
@@ -116,6 +117,7 @@ def write_indicator(indicator: dict) -> None:
 
         if missing := set(country_codes) - set(chart_country_codes):
             st.error(f"Couldn't fetch results for {", ".join(missing)} right now.")
+
         chart_data(title, data, chart_country_codes)
 
 

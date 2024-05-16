@@ -19,7 +19,7 @@ def create_app() -> None:
     custom_style = "<style>div[data-baseweb='select']>div:hover{cursor:pointer}</style>"
     st.markdown(custom_style, unsafe_allow_html=True)
 
-    @st.cache_resource
+    @st.cache_resource(show_spinner=False)
     def init_redis_client() -> Redis:
         """Initialize Redis client."""
 
