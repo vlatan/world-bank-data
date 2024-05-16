@@ -1,7 +1,7 @@
 import streamlit as st
 
 
-def intro() -> None:
+async def intro() -> None:
 
     st.title("World Bank Data - Overview")
     st.write(

@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
-def create_app() -> None:
+async def create_app() -> None:
     """Create streamlit application"""
 
     # meta title - set_page_config needs to be called first in the page
@@ -45,4 +45,4 @@ def create_app() -> None:
         key="topic",
         on_change=op.update_query_params,
     ):
-        options[selected_topic]()
+        await options[selected_topic]()

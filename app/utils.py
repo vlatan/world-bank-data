@@ -74,7 +74,7 @@ def chart_data(indicator_id: str, data: list[dict], country_codes: list[str]) ->
     st.altair_chart(chart, use_container_width=True)
 
 
-def write_indicator(indicator_id: str, countries: dict[str, str]) -> None:
+async def write_indicator(indicator_id: str, countries: dict[str, str]) -> None:
     """Write title, description, table and chart to page."""
 
     # select a country from multiselect
@@ -91,7 +91,7 @@ def write_indicator(indicator_id: str, countries: dict[str, str]) -> None:
     # include/exclude countries
     else:
         country_codes = {countries[cn] for cn in selected}
-        result = asyncio.run(get_countries_data(indicator_id, country_codes))
+        result = await get_countries_data(indicator_id, country_codes)
         result = [item for item in result if item.get("data")]
 
         data = [item["data"] for item in result]
@@ -103,20 +103,21 @@ def write_indicator(indicator_id: str, countries: dict[str, str]) -> None:
         chart_data(indicator_id, data, chart_country_codes)
 
 
-def write_topic(title: str, indicator_ids: list[str]) -> None:
+async def write_topic(title: str, indicator_ids: list[str]) -> None:
     """Write all indicators from a topic."""
 
     # write topic title to page
     st.title(title)
 
     # get all countries
-    countries = Countries().get()
+    countries = await Countries().get()
 
-    indicator_infos = asyncio.run(get_indicators_info(indicator_ids))
+    # get titles and descriptions for every indicator
+    indicator_infos = await get_indicators_info(indicator_ids)
 
     for indicator_id, indicator_info in zip(indicator_ids, indicator_infos):
         st.divider()
         # write title and desc to page
         st.write(f"### {indicator_info.get("title")}")
         st.write(indicator_info.get("description"))
-        write_indicator(indicator_id, countries)
+        await write_indicator(indicator_id, countries)

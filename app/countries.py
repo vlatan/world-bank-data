@@ -11,8 +11,15 @@ class Countries:
         self.redis_client = st.session_state.redis_client
         self.ttl = ttl
 
-    async def _get(self) -> dict[str, str]:
-        """Get country names and codes."""
+    async def get(self) -> dict[str, str]:
+        """
+        Get country names and codes.
+        Get result from Redis or from the API and cache in Redis.
+        """
+
+        result = self.redis_client.get("countries")
+        if isinstance(result, (str, bytes, bytearray)):
+            return json.loads(result)
 
         url = f"{co.API_BASE_URL}/country"
         get_data = functools.partial(requests.get, url, params={"format": "json"})
@@ -38,15 +45,5 @@ class Countries:
             current_result = {item["name"]: item["id"] for item in current_result}
             result.update(current_result)
 
-        return result
-
-    def get(self) -> dict[str, str]:
-        """Get result from Redis or from the API and cache in Redis."""
-
-        result = self.redis_client.get("countries")
-        if isinstance(result, (str, bytes, bytearray)):
-            return json.loads(result)
-
-        result = asyncio.run(self._get())
         self.redis_client.set(name="countries", value=json.dumps(result), ex=self.ttl)
         return result
