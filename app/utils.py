@@ -74,11 +74,8 @@ def chart_data(indicator_id: str, data: list[dict], country_codes: list[str]) ->
     st.altair_chart(chart, use_container_width=True)
 
 
-def write_indicator(indicator_id: str) -> None:
+def write_indicator(indicator_id: str, countries: dict[str, str]) -> None:
     """Write title, description, table and chart to page."""
-
-    # get all countries
-    countries = Countries().get()
 
     # select a country from multiselect
     selected = st.multiselect(
@@ -112,6 +109,9 @@ def write_topic(title: str, indicator_ids: list[str]) -> None:
     # write topic title to page
     st.title(title)
 
+    # get all countries
+    countries = Countries().get()
+
     indicator_infos = asyncio.run(get_indicators_info(indicator_ids))
 
     for indicator_id, indicator_info in zip(indicator_ids, indicator_infos):
@@ -119,4 +119,4 @@ def write_topic(title: str, indicator_ids: list[str]) -> None:
         # write title and desc to page
         st.write(f"### {indicator_info.get("title")}")
         st.write(indicator_info.get("description"))
-        write_indicator(indicator_id)
+        write_indicator(indicator_id, countries)
