@@ -96,7 +96,7 @@ def write_indicator(indicator: dict) -> None:
         label="Choose countries",
         options=countries.keys(),
         default=[default_country_name],
-        key=title,
+        key=f"multiselect.{title.lower()}",
     )
 
     if not selected:
