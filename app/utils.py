@@ -120,4 +120,5 @@ async def write_topic(title: str, indicator_ids: list[str]) -> None:
         # write title and desc to page
         st.write(f"### {indicator_info.get("title")}")
         st.write(indicator_info.get("description"))
+        # write multiselect, table and chart
         await write_indicator(indicator_id, countries)
