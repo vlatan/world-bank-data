@@ -54,6 +54,9 @@ def chart_data(title: str, data: list[dict], country_codes: list[str]) -> None:
         key=f"slider.{title.lower()}",
     )
 
+    # choose the range of columns (years)
+    df = df.loc[:, time_range[0] : time_range[1]]
+
     # write dataframe to page
     st.dataframe(df)
 
