@@ -25,11 +25,12 @@ class Countries:
         if pages == 1:
             return result
 
+        coros = [
+            asyncio.to_thread(get_data, params={"page": page, "format": "json"})
+            for page in range(2, pages + 1)
+        ]
+
         async with asyncio.TaskGroup() as tg:
-            coros = [
-                asyncio.to_thread(get_data, params={"page": page, "format": "json"})
-                for page in range(2, pages + 1)
-            ]
             tasks = [tg.create_task(coro) for coro in coros]
 
         for task in tasks:

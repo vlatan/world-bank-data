@@ -8,25 +8,25 @@ from .indicator import Indicator
 from .countries import Countries
 
 
-async def get_indicators(indicator_ids: list[str]) -> list[dict]:
-    """Get indicators data concurrently."""
+async def get_indicators_info(indicator_ids: Iterable[str]) -> Iterable[dict]:
+    """Concurrently get info (title and description) for each indicator."""
+
+    indicators = [Indicator(indicator_id) for indicator_id in indicator_ids]
+    coroutines = [asyncio.to_thread(indicator.get_info) for indicator in indicators]
 
     async with asyncio.TaskGroup() as tg:
-        indicators = [Indicator(iid) for iid in indicator_ids]
-        coros = [asyncio.to_thread(ind.get) for ind in indicators]
-        tasks = [tg.create_task(coro) for coro in coros]
+        tasks = [tg.create_task(coroutine) for coroutine in coroutines]
 
     return [task.result() for task in tasks]
 
 
-async def get_countries_data(
-    country_codes: Iterable[str], indicator_id: str
-) -> list[dict]:
+async def get_countries_data(indicator_id: str, country_codes: Iterable[str]) -> list[dict]:
     """Concurrently get multiple countries data for a given indicator."""
 
+    indicators = [Indicator(indicator_id, cc) for cc in country_codes]
+    coros = [asyncio.to_thread(ind.get_data) for ind in indicators]
+    
     async with asyncio.TaskGroup() as tg:
-        indicators = [Indicator(indicator_id, cc) for cc in country_codes]
-        coros = [asyncio.to_thread(ind.get) for ind in indicators]
         tasks = [tg.create_task(coro) for coro in coros]
 
     return [task.result() for task in tasks]
@@ -39,7 +39,7 @@ def lookup_country_name(_countries: dict[str, str], code: str):
             return name
 
 
-def chart_data(title: str, data: list[dict], country_codes: list[str]) -> None:
+def chart_data(indicator_id: str, data: list[dict], country_codes: list[str]) -> None:
     """Write slider, table and chart to page given the data and country codes."""
 
     # convert data to dataframe
@@ -52,7 +52,7 @@ def chart_data(title: str, data: list[dict], country_codes: list[str]) -> None:
         label="Select range:",
         options=df.columns,
         value=(df.columns[0], df.columns[-1]),
-        key=f"slider.{title.lower()}",
+        key=f"slider.{indicator_id}",
     )
 
     # choose the range of columns (years)
@@ -74,42 +74,27 @@ def chart_data(title: str, data: list[dict], country_codes: list[str]) -> None:
     st.altair_chart(chart, use_container_width=True)
 
 
-def write_indicator(indicator: dict) -> None:
+def write_indicator(indicator_id: str) -> None:
     """Write title, description, table and chart to page."""
-
-    indicator_id = indicator["id"]
-    title = indicator["title"]
-    description = indicator["description"]
 
     # get all countries
     countries = Countries().get()
-    default_country_code = indicator["country_code"]
-    default_country_name = lookup_country_name(countries, default_country_code)
-    default_data = indicator["data"]
-
-    # write title and desc to page
-    st.write(f"### {title}")
-    st.write(description)
 
     # select a country from multiselect
     selected = st.multiselect(
         label="Select countries:",
         options=countries.keys(),
-        default=[default_country_name],
-        key=f"multiselect.{title.lower()}",
+        default=["United States", "China"],
+        key=f"multiselect.{indicator_id}",
     )
 
     if not selected:
         st.error("Please select at least one country/region.")
 
-    # default country on first load
-    elif len(selected) == 1 and selected[0] == default_country_name:
-        chart_data(title, [default_data], [default_country_code])
-
     # include/exclude countries
     else:
         country_codes = {countries[cn] for cn in selected}
-        result = asyncio.run(get_countries_data(country_codes, indicator_id))
+        result = asyncio.run(get_countries_data(indicator_id, country_codes))
         result = [item for item in result if item.get("data")]
 
         data = [item["data"] for item in result]
@@ -118,7 +103,7 @@ def write_indicator(indicator: dict) -> None:
         if missing := set(country_codes) - set(chart_country_codes):
             st.error(f"Couldn't fetch results for {", ".join(missing)} right now.")
 
-        chart_data(title, data, chart_country_codes)
+        chart_data(indicator_id, data, chart_country_codes)
 
 
 def write_topic(title: str, indicator_ids: list[str]) -> None:
@@ -127,7 +112,11 @@ def write_topic(title: str, indicator_ids: list[str]) -> None:
     # write topic title to page
     st.title(title)
 
-    indicators = get_indicators(indicator_ids)
-    for indicator in asyncio.run(indicators):
+    indicator_infos = asyncio.run(get_indicators_info(indicator_ids))
+
+    for indicator_id, indicator_info in zip(indicator_ids, indicator_infos):
         st.divider()
-        write_indicator(indicator)
+        # write title and desc to page
+        st.write(f"### {indicator_info.get("title")}")
+        st.write(indicator_info.get("description"))
+        write_indicator(indicator_id)
