@@ -38,7 +38,7 @@ def create_app() -> None:
 
     # render select box
     if selected_topic := st.sidebar.selectbox(
-        label="Choose a Topic",
+        label="Select topic:",
         options=options.keys(),
         placeholder="Choose a Topic",
         index=index,

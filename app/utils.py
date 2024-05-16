@@ -49,7 +49,7 @@ def chart_data(title: str, data: list[dict], country_codes: list[str]) -> None:
 
     # display time range slider
     time_range = st.select_slider(
-        label="Select a range:",
+        label="Select range:",
         options=df.columns,
         value=(df.columns[0], df.columns[-1]),
         key=f"slider.{title.lower()}",
@@ -93,7 +93,7 @@ def write_indicator(indicator: dict) -> None:
 
     # select a country from multiselect
     selected = st.multiselect(
-        label="Choose countries",
+        label="Select countries:",
         options=countries.keys(),
         default=[default_country_name],
         key=f"multiselect.{title.lower()}",
