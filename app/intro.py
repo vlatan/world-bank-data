@@ -5,7 +5,7 @@ from slugify import slugify
 async def intro() -> None:
 
     title = "World Bank Data - Overview"
-    st.title(title, slugify(title))
+    st.title(title, anchor=slugify(title))
     st.write(
         """
         Lorem Ipsum is simply dummy text of the printing and typesetting industry. 
