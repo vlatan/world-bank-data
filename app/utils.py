@@ -3,6 +3,7 @@ import pandas as pd
 import altair as alt
 import streamlit as st
 from typing import Iterable
+from slugify import slugify
 from .indicator import Indicator
 from .countries import Countries
 
@@ -19,12 +20,14 @@ async def get_indicators_info(indicator_ids: Iterable[str]) -> Iterable[dict]:
     return [task.result() for task in tasks]
 
 
-async def get_countries_data(indicator_id: str, country_codes: Iterable[str]) -> list[dict]:
+async def get_countries_data(
+    indicator_id: str, country_codes: Iterable[str]
+) -> list[dict]:
     """Concurrently get multiple countries data for a given indicator."""
 
     indicators = [Indicator(indicator_id, cc) for cc in country_codes]
     coros = [asyncio.to_thread(ind.get_data) for ind in indicators]
-    
+
     async with asyncio.TaskGroup() as tg:
         tasks = [tg.create_task(coro) for coro in coros]
 
@@ -65,11 +68,13 @@ def chart_data(indicator_id: str, data: list[dict], country_codes: list[str]) ->
     df = pd.melt(df, id_vars=["index"]).rename(
         columns={"index": "Year", "value": "Value"}
     )
+
     chart = (
         alt.Chart(df)
         .mark_area(opacity=0.3)
         .encode(x="Year:T", y=alt.Y("Value:Q", stack=None), color="Region:N")
     )
+
     st.altair_chart(chart, use_container_width=True)
 
 
@@ -106,7 +111,7 @@ async def write_topic(title: str, indicator_ids: list[str]) -> None:
     """Write all indicators from a topic."""
 
     # write topic title to page
-    st.title(title)
+    st.header(title, anchor=slugify(title), divider="blue")
 
     # get all countries
     countries = await Countries().get()
@@ -115,9 +120,10 @@ async def write_topic(title: str, indicator_ids: list[str]) -> None:
     indicator_infos = await get_indicators_info(indicator_ids)
 
     for indicator_id, indicator_info in zip(indicator_ids, indicator_infos):
-        st.divider()
         # write title and desc to page
-        st.write(f"### {indicator_info.get("title")}")
+        topic_title = indicator_info.get("title", "")
+        st.subheader(topic_title, anchor=slugify(topic_title))
         st.write(indicator_info.get("description"))
+
         # write multiselect, table and chart
         await write_indicator(indicator_id, countries)

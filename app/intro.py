@@ -1,9 +1,11 @@
 import streamlit as st
+from slugify import slugify
 
 
 async def intro() -> None:
 
-    st.title("World Bank Data - Overview")
+    title = "World Bank Data - Overview"
+    st.title(title, slugify(title))
     st.write(
         """
         Lorem Ipsum is simply dummy text of the printing and typesetting industry. 
