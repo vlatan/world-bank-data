@@ -13,7 +13,11 @@ async def create_app() -> None:
     """Create streamlit application"""
 
     # meta title - set_page_config needs to be called first in the page
-    st.set_page_config(page_title="Data Indicators", initial_sidebar_state="expanded")
+    st.set_page_config(
+        page_title="World Bank Data - Overview",
+        initial_sidebar_state="expanded",
+        page_icon=":anger:",
+    )
 
     # cursor pointer on dropdown select
     custom_style = "<style>div[data-baseweb='select']>div:hover{cursor:pointer}</style>"
@@ -36,6 +40,10 @@ async def create_app() -> None:
     options = op.make_options(topics)
     index = op.get_topic_index(list(options.keys()))
 
+    st.sidebar.title(":anger:  World Bank Data")
+
+    st.sidebar.divider()
+
     # render select box
     if selected_topic := st.sidebar.selectbox(
         label="Select topic:",
@@ -46,3 +54,7 @@ async def create_app() -> None:
         on_change=op.update_query_params,
     ):
         await options[selected_topic]()
+
+    st.sidebar.divider()
+
+    st.sidebar.write("Source: https://data.worldbank.org")

@@ -2,7 +2,6 @@ import json
 import pathlib
 import streamlit as st
 import functools as ft
-from .intro import intro
 from typing import Callable
 from .utils import write_topic
 
@@ -23,13 +22,8 @@ def make_options(topics: dict[str, list]) -> dict[str, Callable]:
 
     options = {}
     for title, indicator_ids in topics.items():
-
-        if (title := title.capitalize()) == "Home":
-            options[title] = intro
-            continue
-
+        title = title.capitalize()
         options[title] = ft.partial(write_topic, title, indicator_ids)
-
     return options
 
 
@@ -37,17 +31,20 @@ def get_topic_index(options: list[str]) -> int:
     """
     Get the current topic from a 'topic' url query parameter
     and determine its index in the options dictionary keys.
+    If no valid topic query in URL se topuc query value to HOME.
     """
 
-    # if NO "topic" URL query parameters at all, index is zero, meaning home
+    # if NO "topic" URL query parameters at all index is zero
+    # set topic query param value to first option
     if not (query_params := st.query_params.get_all("topic")):
-        st.query_params.clear()
-        return 0  # Home
+        st.query_params.topic = options[0].lower()
+        return 0
 
-    # if "topic" URL query parameter is not in the options, index is zero, meaning home
+    # if "topic" URL query parameter is not in the options index is zero
+    # set topic query param value to first option
     if (topic := query_params[0].capitalize()) not in options:
-        st.query_params.clear()
-        return 0  # Home
+        st.query_params.topic = options[0].lower()
+        return 0
 
     # return the topic index
     return options.index(topic)
@@ -55,13 +52,8 @@ def get_topic_index(options: list[str]) -> int:
 
 def update_query_params() -> None:
     """
-    Change page query parameters
+    Change topic query parameters
     based on the streamlit session state.
     """
-
-    st.query_params.clear()
-
-    if st.session_state.topic == "Home":
-        return
 
     st.query_params.topic = st.session_state.topic.lower()
