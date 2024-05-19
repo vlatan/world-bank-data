@@ -23,17 +23,7 @@ async def create_app() -> None:
     custom_style = "<style>div[data-baseweb='select']>div:hover{cursor:pointer}</style>"
     st.markdown(custom_style, unsafe_allow_html=True)
 
-    @st.cache_resource(show_spinner=False)
-    def init_redis_client() -> Redis:
-        """Initialize Redis client."""
-
-        return Redis(
-            host=os.getenv("REDIS_HOST", "localhost"),
-            password=os.getenv("REDIS_PASSWORD"),
-            client_name="indicator",
-        )
-
-    # cache redis client and store it in session
+    # store redis client in client session
     st.session_state.redis_client = init_redis_client()
 
     topics = op.get_topics()
@@ -58,3 +48,14 @@ async def create_app() -> None:
     st.sidebar.divider()
 
     st.sidebar.write("Source: https://data.worldbank.org")
+
+
+@st.cache_resource(show_spinner=False)
+def init_redis_client(client_name: str = "world_bank_cache") -> Redis:
+    """Initialize Redis client."""
+
+    return Redis(
+        host=os.getenv("REDIS_HOST", "localhost"),
+        password=os.getenv("REDIS_PASSWORD"),
+        client_name=client_name,
+    )
