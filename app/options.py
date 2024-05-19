@@ -46,6 +46,9 @@ def get_topic_index(options: list[str]) -> int:
         st.query_params.topic = options[0].lower()
         return 0
 
+    # set topic query to lowercase
+    st.query_params.topic = topic.lower()
+
     # return the topic index
     return options.index(topic)
 
