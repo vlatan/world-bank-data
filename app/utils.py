@@ -34,13 +34,6 @@ async def get_countries_data(
     return [task.result() for task in tasks]
 
 
-@st.cache_data(show_spinner=False)
-def lookup_country_name(_countries: dict[str, str], code: str):
-    for name, current_code in _countries.items():
-        if code == current_code:
-            return name
-
-
 def chart_data(indicator_id: str, data: list[dict], country_codes: list[str]) -> None:
     """Write slider, table and chart to page given the data and country codes."""
 
