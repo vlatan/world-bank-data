@@ -1,75 +1,76 @@
-import json
-import logging
+import asyncio
 import requests
-import streamlit as st
+from . import cache as ch
+from typing import Iterable
 from . import constants as co
 
 
-class Indicator:
-    def __init__(
-        self, indicator_id: str, country_code: str | None = None, ttl: int = 86400
-    ):
-        self.country_code = country_code
-        self.redis_client = st.session_state.redis_client
-        self.indicator_id = indicator_id
-        self.ttl = ttl
+@ch.cache_data
+def get_info(indicator_id: str) -> dict[str, str]:
+    """Get indicator info (title and description)."""
 
-    def get_info(self) -> dict[str, str]:
-        """Get indicator info (title and description)."""
+    url = f"{co.API_BASE_URL}/indicator/{indicator_id}"
+    info = requests.get(url, params={"format": "json"}).json()[1][0]
 
-        # the redis key is the indicator's id
-        result = self.redis_client.get(redis_key := self.indicator_id)
-        if isinstance(result, (str, bytes, bytearray)):
-            return json.loads(result)
+    return {
+        "id": indicator_id,
+        "title": info["name"].strip(),
+        "description": info["sourceNote"].strip().replace("$", "\\$"),
+    }
 
-        url = f"{co.API_BASE_URL}/indicator/{self.indicator_id}"
-        info = requests.get(url, params={"format": "json"}).json()[1][0]
 
-        result = {
-            "id": self.indicator_id,
-            "title": info["name"].strip(),
-            "description": info["sourceNote"].strip().replace("$", "\\$"),
-        }
+@ch.cache_data
+def get_data(country_code: str, indicator_id: str) -> dict[str, str | dict]:
+    """Get numerical data for indicator."""
 
-        self.redis_client.set(name=redis_key, value=json.dumps(result), ex=self.ttl)
-        return result
+    page, pages, result = 0, 1, {}
+    url = f"{co.API_BASE_URL}/country/{country_code}/indicator/{indicator_id}"
 
-    def get_data(self) -> dict[str, str]:
-        """Get numerical data for indicator."""
+    while page < pages:
+        page += 1
 
-        if not self.country_code:
-            msg = "You need to provide a country code for getting the indicator's data."
-            logging.error(msg)
-            return {}
+        response = requests.get(url, params={"page": page, "format": "json"}).json()
+        pages, data = response[0]["pages"], response[1]
 
-        # the redis key is country code and indicator id
-        redis_key = f"{self.country_code}:{self.indicator_id}"
+        if not data:
+            continue
 
-        result = self.redis_client.get(redis_key)
-        if isinstance(result, (str, bytes, bytearray)):
-            return json.loads(result)
+        for item in data:
+            if value := item.get("value"):
+                result[item["date"]] = value
 
-        page, pages, result = 0, 1, {}
-        url = f"{co.API_BASE_URL}/country/{self.country_code}/indicator/{self.indicator_id}"
+    return {
+        "id": indicator_id,
+        "country_code": country_code,
+        "data": dict(sorted(result.items())),
+    }
 
-        while page < pages:
-            page += 1
 
-            response = requests.get(url, params={"page": page, "format": "json"}).json()
-            pages, data = response[0]["pages"], response[1]
+async def get_indicators_info(indicator_ids: Iterable[str]) -> Iterable[dict]:
+    """Concurrently get info (title and description) for each indicator."""
 
-            if not data:
-                continue
+    # create coroutines
+    coroutines = [asyncio.to_thread(get_info, iid) for iid in indicator_ids]
 
-            for item in data:
-                if value := item.get("value"):
-                    result[item["date"]] = value
+    # execute tasks in parallel
+    async with asyncio.TaskGroup() as tg:
+        tasks = [tg.create_task(coroutine) for coroutine in coroutines]
 
-        result = {
-            "id": self.indicator_id,
-            "country_code": self.country_code,
-            "data": dict(sorted(result.items())),
-        }
+    # get results
+    return [task.result() for task in tasks]
 
-        self.redis_client.set(name=redis_key, value=json.dumps(result), ex=self.ttl)
-        return result
+
+async def get_countries_data(
+    indicator_id: str, country_codes: Iterable[str]
+) -> list[dict]:
+    """Concurrently get multiple countries data for a given indicator."""
+
+    # create coroutines
+    coros = [asyncio.to_thread(get_data, cc, indicator_id) for cc in country_codes]
+
+    # execute tasks in parallel
+    async with asyncio.TaskGroup() as tg:
+        tasks = [tg.create_task(coro) for coro in coros]
+
+    # get results
+    return [task.result() for task in tasks]

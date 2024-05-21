@@ -3,6 +3,7 @@ import streamlit as st
 from redis import Redis
 from . import options as op
 from dotenv import load_dotenv
+from .cache import redis_client_ctx
 
 
 # load the enviroment variables from an .env file
@@ -24,7 +25,7 @@ async def create_app() -> None:
     st.markdown(custom_style, unsafe_allow_html=True)
 
     # store redis client in client session
-    st.session_state.redis_client = init_redis_client()
+    redis_client_ctx.set(init_redis_client())
 
     topics = op.get_topics()
     options = op.make_options(topics)

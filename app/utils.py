@@ -1,37 +1,9 @@
-import asyncio
 import pandas as pd
 import altair as alt
 import streamlit as st
-from typing import Iterable
 from slugify import slugify
-from .indicator import Indicator
-from .countries import Countries
-
-
-async def get_indicators_info(indicator_ids: Iterable[str]) -> Iterable[dict]:
-    """Concurrently get info (title and description) for each indicator."""
-
-    indicators = [Indicator(indicator_id) for indicator_id in indicator_ids]
-    coroutines = [asyncio.to_thread(indicator.get_info) for indicator in indicators]
-
-    async with asyncio.TaskGroup() as tg:
-        tasks = [tg.create_task(coroutine) for coroutine in coroutines]
-
-    return [task.result() for task in tasks]
-
-
-async def get_countries_data(
-    indicator_id: str, country_codes: Iterable[str]
-) -> list[dict]:
-    """Concurrently get multiple countries data for a given indicator."""
-
-    indicators = [Indicator(indicator_id, cc) for cc in country_codes]
-    coros = [asyncio.to_thread(ind.get_data) for ind in indicators]
-
-    async with asyncio.TaskGroup() as tg:
-        tasks = [tg.create_task(coro) for coro in coros]
-
-    return [task.result() for task in tasks]
+from .countries import get_countries
+from .indicator import get_indicators_info, get_countries_data
 
 
 def chart_data(indicator_id: str, data: list[dict], country_codes: list[str]) -> None:
@@ -107,7 +79,7 @@ async def write_topic(title: str, indicator_ids: list[str]) -> None:
     st.header(title, anchor=slugify(title), divider="blue")
 
     # get all countries
-    countries = await Countries().get()
+    countries = await get_countries()
 
     # get titles and descriptions for every indicator
     indicator_infos = await get_indicators_info(indicator_ids)
