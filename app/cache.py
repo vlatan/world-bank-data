@@ -1,7 +1,7 @@
 import json
 import functools
 import contextvars
-from typing import Callable, Hashable
+from typing import Callable, Hashable, Any
 from redis.exceptions import ConnectionError
 from datetime import datetime, timedelta, timezone
 
@@ -20,10 +20,10 @@ def cache_data(_func: Callable | None = None, *, ttl: int = 86400) -> Callable:
 
         func.cache_callable = functools.lru_cache(maxsize=128)(func)
         func.lifetime = timedelta(seconds=ttl)
-        func.expiration = datetime.now(timezone.utc) + func.lifetime
+        func.expiretime = datetime.now(timezone.utc) + func.lifetime
 
         @functools.wraps(func)
-        def wrapper(*args, **kwargs):
+        def wrapper(*args, **kwargs) -> Any:
             try:
                 # get redis client object from context variable
                 redis_client = redis_client_ctx.get()
@@ -46,9 +46,9 @@ def cache_data(_func: Callable | None = None, *, ttl: int = 86400) -> Callable:
                 return result
 
             except ConnectionError:
-                if now := datetime.now(timezone.utc) >= func.expiration:
+                if now := datetime.now(timezone.utc) >= func.expiretime:
                     func.cache_callable.cache_clear()
-                    func.expiration = now + func.lifetime
+                    func.expiretime = now + func.lifetime
 
                 return func.cache_callable(*args, **kwargs)
 
