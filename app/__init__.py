@@ -24,8 +24,10 @@ async def create_app() -> None:
     custom_style = "<style>div[data-baseweb='select']>div:hover{cursor:pointer}</style>"
     st.markdown(custom_style, unsafe_allow_html=True)
 
-    # store redis client in client session
-    redis_client_ctx.set(init_redis_client())
+    # store Redis client object in a context variable
+    # to be able to access it in threads down the line
+    redis_client = init_redis_client()
+    redis_client_ctx.set(redis_client)
 
     topics = op.get_topics()
     options = op.make_options(topics)
