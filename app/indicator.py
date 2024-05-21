@@ -21,7 +21,7 @@ def get_info(indicator_id: str) -> dict[str, str]:
 
 @ch.cache_data
 def get_data(country_code: str, indicator_id: str) -> dict[str, str | dict]:
-    """Get numerical data for indicator."""
+    """Get country data for a given indicator."""
 
     page, pages, result = 0, 1, {}
     url = f"{co.API_BASE_URL}/country/{country_code}/indicator/{indicator_id}"
@@ -63,7 +63,7 @@ async def get_indicators_info(indicator_ids: Iterable[str]) -> Iterable[dict]:
 async def get_countries_data(
     indicator_id: str, country_codes: Iterable[str]
 ) -> list[dict]:
-    """Concurrently get multiple countries data for a given indicator."""
+    """Concurrently get data for each country for a given indicator."""
 
     # create coroutines
     coros = [asyncio.to_thread(get_data, cc, indicator_id) for cc in country_codes]

@@ -6,7 +6,7 @@ from . import constants as co
 
 @ch.cache_data
 def get_page_countries(page: int = 1) -> dict:
-    """Get JSON result from one page countries API page."""
+    """Get JSON result from one page of countries API."""
 
     url = f"{co.API_BASE_URL}/country"
     params = {"page": page, "format": "json"}
@@ -14,10 +14,7 @@ def get_page_countries(page: int = 1) -> dict:
 
 
 async def get_countries() -> dict[str, str]:
-    """
-    Get country names and codes.
-    Get result from Redis or from the API and cache in Redis.
-    """
+    """Get ALL country names and codes."""
 
     response = get_page_countries()
     pages, result = response[0]["pages"], response[1]
@@ -37,5 +34,4 @@ async def get_countries() -> dict[str, str]:
         current_result = {item["name"]: item["id"] for item in current_result}
         result.update(current_result)
 
-    print(result)
     return result
