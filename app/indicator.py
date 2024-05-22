@@ -1,3 +1,4 @@
+import logging
 import asyncio
 import requests
 from . import cache as ch
@@ -10,7 +11,14 @@ def get_info(indicator_id: str) -> dict[str, str]:
     """Get indicator info (title and description)."""
 
     url = f"{co.API_BASE_URL}/indicator/{indicator_id}"
-    info = requests.get(url, params={"format": "json"}).json()[1][0]
+
+    try:
+        response = requests.get(url, params={"format": "json"}, timeout=5)
+        response.raise_for_status()
+        info = response.json()[1][0]
+    except Exception:
+        logging.exception("Couldn't fetch indicator info from API.")
+        return {}
 
     return {
         "id": indicator_id,

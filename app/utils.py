@@ -86,9 +86,12 @@ async def write_topic(title: str, indicator_ids: list[str]) -> None:
 
     for indicator_id, indicator_info in zip(indicator_ids, indicator_infos):
         # write title and desc to page
-        topic_title = indicator_info.get("title", "")
-        st.subheader(topic_title, anchor=slugify(topic_title))
-        st.write(indicator_info.get("description"))
+        if indicator_info:
+            topic_title = indicator_info.get("title", "")
+            st.subheader(topic_title, anchor=slugify(topic_title))
+            st.write(indicator_info.get("description"))
+        else:
+            st.error("Couldn't fetch title and/or description for this topic.")
 
         # write multiselect, table and chart
         await write_indicator(indicator_id, countries)
