@@ -13,7 +13,9 @@ def get_page_countries(page: int = 1) -> tuple[int, dict[str, str]]:
     params = {"page": page, "format": "json"}
 
     try:
-        response = requests.get(url, params=params).json()
+        response = requests.get(url, params=params, timeout=5)
+        response.raise_for_status()
+        response = response.json()
         pages, result = response[0]["pages"], response[1]
         result = {item["name"]: item["id"] for item in result}
         return pages, result
