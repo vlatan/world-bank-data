@@ -3,7 +3,7 @@ import pathlib
 import streamlit as st
 import functools as ft
 from typing import Callable
-from .utils import write_topic
+from .write import write_topic
 
 
 @st.cache_data(show_spinner=False)
