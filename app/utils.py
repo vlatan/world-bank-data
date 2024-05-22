@@ -64,12 +64,17 @@ async def write_indicator(indicator_id: str, countries: dict[str, str]) -> None:
         result = [item for item in result if item.get("data")]
 
         data = [item["data"] for item in result]
-        chart_country_codes = [item["country_code"] for item in result]
+        chart_country_codes = {item["country_code"] for item in result}
 
-        if missing := set(country_codes) - set(chart_country_codes):
+        if (missing := country_codes - chart_country_codes) == country_codes:
+            msg = f"Couldn't fetch and chart data for {", ".join(missing)} right now."
+            st.error(msg)
+            return
+
+        elif missing:
             st.error(f"Couldn't fetch results for {", ".join(missing)} right now.")
 
-        chart_data(indicator_id, data, chart_country_codes)
+        chart_data(indicator_id, data, list(chart_country_codes))
 
 
 async def write_topic(title: str, indicator_ids: list[str]) -> None:

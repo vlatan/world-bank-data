@@ -1,6 +1,7 @@
 import logging
 import asyncio
 import requests
+import functools
 from . import cache as ch
 from typing import Iterable
 from . import constants as co
@@ -17,7 +18,8 @@ def get_info(indicator_id: str) -> dict[str, str]:
         response.raise_for_status()
         info = response.json()[1][0]
     except Exception:
-        logging.exception(f"Couldn't fetch {indicator_id} indicator info from API.")
+        msg = f"Couldn't fetch indicator info from API: {url}"
+        logging.exception(msg)
         return {}
 
     return {
@@ -28,24 +30,61 @@ def get_info(indicator_id: str) -> dict[str, str]:
 
 
 @ch.cache_data
-def get_data(country_code: str, indicator_id: str) -> dict[str, str | dict]:
+def get_page_data(
+    country_code: str, indicator_id: str, page: int = 1
+) -> None | tuple[int, dict[str, str]]:
+    """Get country data for a given indicator for a given page."""
+
+    url = f"{co.API_BASE_URL}/country/{country_code}/indicator/{indicator_id}"
+    params = {"page": page, "format": "json"}
+
+    try:
+        response = requests.get(url, params=params, timeout=5)
+        response.raise_for_status()
+        response = response.json()
+        pages, data = response[0]["pages"], response[1]
+        data = {item["date"]: item["value"] for item in data if item.get("value")}
+        return pages, data
+    except Exception:
+        msg = f"Couldn't fetch country data for API ({url}) for page {page}."
+        logging.exception(msg)
+        return None
+
+
+async def get_data(country_code: str, indicator_id: str) -> dict[str, str | dict]:
     """Get country data for a given indicator."""
 
-    page, pages, result = 0, 1, {}
-    url = f"{co.API_BASE_URL}/country/{country_code}/indicator/{indicator_id}"
+    empty_response = {
+        "id": indicator_id,
+        "country_code": country_code,
+        "data": {},
+    }
 
-    while page < pages:
-        page += 1
+    page_data = functools.partial(get_page_data, country_code, indicator_id)
 
-        response = requests.get(url, params={"page": page, "format": "json"}).json()
-        pages, data = response[0]["pages"], response[1]
+    if (response := page_data()) is None:
+        return empty_response
 
-        if not data:
-            continue
+    pages, result = response
 
-        for item in data:
-            if value := item.get("value"):
-                result[item["date"]] = value
+    if pages == 1:
+        return {
+            "id": indicator_id,
+            "country_code": country_code,
+            "data": dict(sorted(result.items())),
+        }
+
+    page_range = range(2, pages + 1)
+    coros = [asyncio.to_thread(page_data, page) for page in page_range]
+
+    async with asyncio.TaskGroup() as tg:
+        tasks = [tg.create_task(coro) for coro in coros]
+
+    for task in tasks:
+        if (current_response := task.result()) is None:
+            return empty_response
+        _, current_result = current_response
+        result.update(current_result)
 
     return {
         "id": indicator_id,
@@ -73,12 +112,9 @@ async def get_countries_data(
 ) -> list[dict]:
     """Concurrently get data for each country for a given indicator."""
 
-    # create coroutines
-    coros = [asyncio.to_thread(get_data, cc, indicator_id) for cc in country_codes]
-
     # execute tasks in parallel
     async with asyncio.TaskGroup() as tg:
-        tasks = [tg.create_task(coro) for coro in coros]
+        tasks = [tg.create_task(get_data(cc, indicator_id)) for cc in country_codes]
 
     # get results
     return [task.result() for task in tasks]
