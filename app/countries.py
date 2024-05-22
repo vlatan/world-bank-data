@@ -1,3 +1,4 @@
+import logging
 import asyncio
 import requests
 from . import cache as ch
@@ -10,17 +11,24 @@ def get_page_countries(page: int = 1) -> tuple[int, dict[str, str]]:
 
     url = f"{co.API_BASE_URL}/country"
     params = {"page": page, "format": "json"}
-    response = requests.get(url, params=params).json()
-    pages, result = response[0]["pages"], response[1]
-    result = {item["name"]: item["id"] for item in result}
-    return pages, result
+
+    try:
+        response = requests.get(url, params=params).json()
+        pages, result = response[0]["pages"], response[1]
+        result = {item["name"]: item["id"] for item in result}
+        return pages, result
+    except Exception:
+        msg = f"Couldn't fetch countries from API ({url}) for page {page}."
+        logging.exception(msg)
+        return 0, {}
 
 
 async def get_countries() -> dict[str, str]:
     """Get ALL country names and codes."""
 
     pages, result = get_page_countries()
-    if pages == 1:
+
+    if pages in [0, 1]:
         return result
 
     page_range = range(2, pages + 1)

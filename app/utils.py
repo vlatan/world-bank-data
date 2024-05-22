@@ -26,7 +26,7 @@ def chart_data(indicator_id: str, data: list[dict], country_codes: list[str]) ->
     df = df.loc[:, time_range[0] : time_range[1]]
 
     # write dataframe to page
-    st.dataframe(df)
+    st.dataframe(df, use_container_width=True)
 
     # melt data to display on chart
     df = df.transpose().reset_index()
@@ -46,11 +46,16 @@ def chart_data(indicator_id: str, data: list[dict], country_codes: list[str]) ->
 async def write_indicator(indicator_id: str, countries: dict[str, str]) -> None:
     """Write title, description, table and chart to page."""
 
+    # check if default countries are a subset of the options
+    default_countries = ["United States", "United Kingdom"]
+    if not (set(default_countries) <= set(countries.keys())):
+        default_countries = []
+
     # select a country from multiselect
     selected = st.multiselect(
         label="Select countries:",
         options=countries.keys(),
-        default=["United States", "China"],
+        default=default_countries,
         key=f"multiselect.{indicator_id}",
     )
 
@@ -85,6 +90,10 @@ async def write_topic(title: str, indicator_ids: list[str]) -> None:
 
     # get all countries
     countries = await get_countries()
+    if not countries:
+        msg = "Couldn't fetch and chart data right now due to World Bank API unavailability."
+        st.error(msg)
+        return
 
     # get titles and descriptions for every indicator
     indicator_infos = await get_indicators_info(indicator_ids)

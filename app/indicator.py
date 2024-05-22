@@ -46,7 +46,7 @@ def get_page_data(
         data = {item["date"]: item["value"] for item in data if item.get("value")}
         return pages, data
     except Exception:
-        msg = f"Couldn't fetch country data for API ({url}) for page {page}."
+        msg = f"Couldn't fetch country data from API ({url}) for page {page}."
         logging.exception(msg)
         return None
 
