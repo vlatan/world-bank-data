@@ -17,7 +17,7 @@ def get_info(indicator_id: str) -> dict[str, str]:
         response.raise_for_status()
         info = response.json()[1][0]
     except Exception:
-        logging.exception("Couldn't fetch indicator info from API.")
+        logging.exception(f"Couldn't fetch {indicator_id} indicator info from API.")
         return {}
 
     return {
