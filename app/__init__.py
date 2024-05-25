@@ -22,7 +22,7 @@ async def create_app() -> None:
 
     # cursor pointer on dropdown select
     custom_style = "<style>div[data-baseweb='select']>div:hover{cursor:pointer}</style>"
-    st.markdown(custom_style, unsafe_allow_html=True)
+    st.html(custom_style)
 
     # store Redis client object in a context variable
     # to be able to access it in threads down the line
