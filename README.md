@@ -39,7 +39,7 @@ You can check out the app logs with:
 docker compose logs -f app
 ```
 
-## Deployment
+## 🔥 Deployment
 
 :anger: https://worldbank.streamlit.app
 
