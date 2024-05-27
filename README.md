@@ -4,13 +4,13 @@
 A [Streamlit](https://github.com/streamlit/streamlit) app which fetches an overview data from the [World Bank](https://data.worldbank.org/), specifically from the topics and their indicators defined in [topics.json](app/topics.json), and charts the data for selected countries.
 
 
-## ✨ Features
+## Features
 
 * It makes heavy use of the [asyncio](https://docs.python.org/3/library/asyncio.html) Python native library to achieve concurrent I/O operations, namely API calls to World Bank.
 * If [Redis](https://redis.io/) service available it will cache the data fetched in Redis, if not it will failover to caching in memory.
 
 
-## ⚡️ Quick start
+## Quick start
 
 Take a look at the [example.env](example.env), create your own `.env` file in the root of this repo and adjust the environment variables.
 
@@ -39,10 +39,10 @@ You can check out the app logs with:
 docker compose logs -f app
 ```
 
-## 🔥 Deployment
+## Deployment
 
-:anger: https://worldbank.streamlit.app
+https://worldbank.streamlit.app
 
-## ⚠️ License
+## License
 
 [![License: MIT](https://img.shields.io/github/license/vlatan/world-bank-data?label=License)](/LICENSE "License: MIT")
