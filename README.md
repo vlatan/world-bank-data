@@ -39,6 +39,10 @@ You can check out the app logs with:
 docker compose logs -f app
 ```
 
+## Deployment
+
+:anger: https://worldbank.streamlit.app
+
 ## License
 
 [![License: MIT](https://img.shields.io/github/license/vlatan/world-bank-data?label=License)](/LICENSE "License: MIT")
