@@ -37,8 +37,10 @@ ENV STREAMLIT_CLIENT_SHOW_ERROR_DETAILS=false \
     STREAMLIT_SERVER_HEADLESS=true \
     STREAMLIT_SERVER_RUN_ON_SAVE=false \
     STREAMLIT_SERVER_ADDRESS=0.0.0.0 \
-    STREAMLIT_SERVER_PORT=${PORT} \
+    STREAMLIT_SERVER_PORT=$PORT \
     STREAMLIT_BROWSER_GATHER_USAGE_STATS=false
+
+EXPOSE $PORT
 
 # https://docs.docker.com/reference/dockerfile/#healthcheck
 HEALTHCHECK CMD curl --fail http://localhost:${PORT}/_stcore/health
