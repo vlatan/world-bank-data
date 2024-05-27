@@ -43,6 +43,6 @@ docker compose logs -f app
 
 :anger: https://worldbank.streamlit.app
 
-## License
+## ⚠️ License
 
 [![License: MIT](https://img.shields.io/github/license/vlatan/world-bank-data?label=License)](/LICENSE "License: MIT")
