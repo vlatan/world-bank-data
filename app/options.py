@@ -56,4 +56,5 @@ def update_query_params() -> None:
     based on the streamlit session state.
     """
 
+    st.query_params.clear()
     st.query_params.topic = st.session_state.topic.lower()
