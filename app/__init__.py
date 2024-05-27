@@ -30,8 +30,8 @@ async def create_app() -> None:
     redis_client_ctx.set(redis_client)
 
     topics = op.get_topics()
-    options = op.make_options(topics)
-    index = op.get_topic_index(list(options.keys()))
+    select_options = op.make_options(topics)
+    index = op.get_topic_index(list(select_options.keys()))
 
     st.sidebar.title(":anger:  World Bank Data")
 
@@ -40,13 +40,13 @@ async def create_app() -> None:
     # render select box
     if selected_topic := st.sidebar.selectbox(
         label="Select topic:",
-        options=options.keys(),
+        options=select_options.keys(),
         placeholder="Choose a Topic",
         index=index,
         key="topic",
         on_change=op.update_query_params,
     ):
-        await options[selected_topic]()
+        await select_options[selected_topic]()
 
     st.sidebar.divider()
 
