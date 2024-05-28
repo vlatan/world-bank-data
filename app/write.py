@@ -1,10 +1,13 @@
 import pandas as pd
 import altair as alt
 import streamlit as st
+from typing import Iterable
 from .indicator import get_countries_data
 
 
-def chart_data(indicator_id: str, data: list[dict], country_codes: list[str]) -> None:
+def chart_data(
+    indicator_id: str, data: Iterable[dict], country_codes: list[str]
+) -> None:
     """Write slider, table and chart to page given the data and country codes."""
 
     # convert data to dataframe

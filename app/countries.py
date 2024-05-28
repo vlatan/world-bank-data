@@ -2,14 +2,14 @@ import logging
 import asyncio
 import requests
 from . import cache as ch
-from . import constants as co
+from constants import API_BASE_URL
 
 
 @ch.cache_data
 def get_page_countries(page: int = 1) -> tuple[int, dict[str, str]]:
     """Get JSON result from one page of countries API."""
 
-    url = f"{co.API_BASE_URL}/country"
+    url = f"{API_BASE_URL}/country"
     params = {"page": page, "format": "json"}
 
     try:

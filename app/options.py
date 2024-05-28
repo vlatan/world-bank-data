@@ -5,7 +5,7 @@ from typing import Literal, Iterable
 
 
 @st.cache_data(show_spinner=False)
-def get_topics() -> dict[str, list[str]]:
+def get_topics() -> dict[str, Iterable[str]]:
     """Get topics and their indicator ids from file."""
 
     topics_file = pathlib.Path(__file__).parent.resolve() / "topics.json"

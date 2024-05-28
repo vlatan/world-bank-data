@@ -4,14 +4,14 @@ import requests
 import functools
 from . import cache as ch
 from typing import Iterable
-from . import constants as co
+from constants import API_BASE_URL
 
 
 @ch.cache_data
 def get_info(indicator_id: str) -> dict[str, str]:
     """Get indicator info (title and description)."""
 
-    url = f"{co.API_BASE_URL}/indicator/{indicator_id}"
+    url = f"{API_BASE_URL}/indicator/{indicator_id}"
 
     try:
         response = requests.get(url, params={"format": "json"}, timeout=5)
@@ -35,7 +35,7 @@ def get_page_data(
 ) -> None | tuple[int, dict[str, str]]:
     """Get country data for a given indicator for a given page."""
 
-    url = f"{co.API_BASE_URL}/country/{country_code}/indicator/{indicator_id}"
+    url = f"{API_BASE_URL}/country/{country_code}/indicator/{indicator_id}"
     params = {"page": page, "format": "json"}
 
     try:
@@ -109,7 +109,7 @@ async def get_indicators_info(indicator_ids: Iterable[str]) -> Iterable[dict]:
 
 async def get_countries_data(
     indicator_id: str, country_codes: Iterable[str]
-) -> list[dict]:
+) -> Iterable[dict]:
     """Concurrently get data for each country for a given indicator."""
 
     # execute tasks in parallel
