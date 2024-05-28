@@ -2,9 +2,10 @@ import logging
 import asyncio
 import requests
 import functools
-from . import cache as ch
 from typing import Iterable
-from constants import API_BASE_URL
+
+from . import cache as ch
+from .constants import API_BASE_URL
 
 
 @ch.cache_data
@@ -32,7 +33,7 @@ def get_info(indicator_id: str) -> dict[str, str]:
 @ch.cache_data
 def get_page_data(
     country_code: str, indicator_id: str, page: int = 1
-) -> None | tuple[int, dict[str, str]]:
+) -> tuple[int, dict[str, str]]:
     """Get country data for a given indicator for a given page."""
 
     url = f"{API_BASE_URL}/country/{country_code}/indicator/{indicator_id}"
@@ -48,7 +49,7 @@ def get_page_data(
     except Exception:
         msg = f"Couldn't fetch country data from API ({url}) for page {page}."
         logging.exception(msg)
-        return None
+        return 0, {}
 
 
 async def get_data(country_code: str, indicator_id: str) -> dict[str, str | dict]:
@@ -61,11 +62,10 @@ async def get_data(country_code: str, indicator_id: str) -> dict[str, str | dict
     }
 
     page_data = functools.partial(get_page_data, country_code, indicator_id)
+    pages, result = page_data()
 
-    if (response := page_data()) is None:
+    if not result:
         return empty_response
-
-    pages, result = response
 
     if pages == 1:
         return {
@@ -81,9 +81,9 @@ async def get_data(country_code: str, indicator_id: str) -> dict[str, str | dict
         tasks = [tg.create_task(coro) for coro in coros]
 
     for task in tasks:
-        if (current_response := task.result()) is None:
+        _, current_result = task.result()
+        if not current_result:
             return empty_response
-        _, current_result = current_response
         result.update(current_result)
 
     return {

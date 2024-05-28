@@ -2,6 +2,7 @@ import pandas as pd
 import altair as alt
 import streamlit as st
 from typing import Iterable
+
 from .indicator import get_countries_data
 
 

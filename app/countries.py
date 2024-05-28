@@ -1,8 +1,9 @@
 import logging
 import asyncio
 import requests
+
 from . import cache as ch
-from constants import API_BASE_URL
+from .constants import API_BASE_URL
 
 
 @ch.cache_data

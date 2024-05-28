@@ -38,7 +38,7 @@ def get_select_index(key: str, options: Iterable[str]) -> int:
 
 
 def update_query_param(
-    key: Literal["topic", "indicator"], indicator_infos: dict = {}
+    key: Literal["topic", "indicator"], indicator_infos: Iterable[dict[str, str]] = []
 ) -> None:
     """
     Change topic or indicator query parameter
