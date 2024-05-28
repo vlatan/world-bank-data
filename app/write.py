@@ -86,7 +86,7 @@ async def write_topic(title: str, indicator_ids: list[str]) -> None:
     """Write all indicators from a topic."""
 
     # write topic title to page
-    st.header(title, anchor=slugify(title), divider="blue")
+    st.header(title, anchor=False, divider="blue")
 
     # get all countries
     countries = await get_countries()
