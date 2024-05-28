@@ -10,7 +10,7 @@ A [Streamlit](https://github.com/streamlit/streamlit) app which fetches an overv
 * If [Redis](https://redis.io/) service available it will cache the data fetched in Redis, if not it will failover to caching in memory.
 
 
-## Quick start
+## Quick Start
 
 Take a look at the [example.env](example.env), create your own `.env` file in the root of this repo and adjust the environment variables.
 
@@ -28,7 +28,7 @@ Run the app out of the box on `localhost`, on port 8501.
 streamlit run run.py
 ```
 
-If you want to make us of [Docker](https://www.docker.com/) use the the following command, which utilizes the [compose.yaml](compose.yaml) file to spin the app and a Redis service in the background, which will make the app available on `localhost`, on port 8000.
+If you want to make use of [Docker](https://www.docker.com/) use the the following command, which utilizes the [compose.yaml](compose.yaml) file to spin the app and a Redis service in the background, which will make the app available on `localhost`, on port 8000.
 
 ```
 docker compose up --build --remove-orphans -d
@@ -39,7 +39,7 @@ You can check out the app logs with:
 docker compose logs -f app
 ```
 
-## Deployment
+## Deployed
 
 https://worldbank.streamlit.app
 
