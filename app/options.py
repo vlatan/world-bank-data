@@ -1,60 +1,64 @@
 import json
 import pathlib
 import streamlit as st
-import functools as ft
-from typing import Callable
-from .write import write_topic
+from typing import Literal, Iterable
 
 
 @st.cache_data(show_spinner=False)
 def get_topics() -> dict[str, list[str]]:
+    """Get topics and their indicator ids from file."""
+
     topics_file = pathlib.Path(__file__).parent.resolve() / "topics.json"
     return json.loads(pathlib.Path(topics_file).read_text())
 
 
-@st.cache_data(show_spinner=False)
-def make_options(topics: dict[str, list]) -> dict[str, Callable]:
+def get_select_index(key: str, options: Iterable[str]) -> int:
     """
-    Constructs a dictionary with key 'topic'
-    and value callable for that topic given the input dictionary
-    with key topic and value list of indicators.
-    """
-
-    options = {}
-    for title, indicator_ids in topics.items():
-        title = title.capitalize()
-        options[title] = ft.partial(write_topic, title, indicator_ids)
-    return options
-
-
-def get_topic_index(options: list[str]) -> int:
-    """
-    Get the current topic from a 'topic' url query parameter
-    and determine its index in the options dictionary keys.
-    If no valid topic query in URL se topuc query value to HOME.
+    Get the current topic or indicator query param from URLS
+    and determine its index in the options list.
+    If no valid query in URL return index ZERO.
     """
 
-    # if NO "topic" URL query parameters at all index is zero
-    # set topic query param value to first option
-    if not (query_params := st.query_params.get_all("topic")):
-        st.query_params.topic = options[0].lower()
+    lower_case_options = [item.lower() for item in options]
+
+    # if NO query_params AT ALL for a given key, index is zero
+    # set query param value to first option
+    if not (query_params := st.query_params.get_all(key)):
+        st.query_params[key] = lower_case_options[0]
         return 0
 
-    # if "topic" URL query parameter is not in the options index is zero
-    # set topic query param value to first option
-    if (topic := query_params[0].capitalize()) not in options:
-        st.query_params.topic = options[0].lower()
+    # if query param value is not in the options, index is zero
+    # set query param value to first option
+    if (value := query_params[0]) not in lower_case_options:
+        st.query_params[key] = lower_case_options[0]
         return 0
 
-    # return the topic index
-    return options.index(topic)
+    # return the index of the query param value in options
+    return lower_case_options.index(value)
 
 
-def update_query_params() -> None:
+def update_query_param(
+    key: Literal["topic", "indicator"], indicator_infos: dict = {}
+) -> None:
     """
-    Change topic query parameters
+    Change topic or indicator query parameter
     based on the streamlit session state.
     """
 
-    st.query_params.clear()
-    st.query_params.topic = st.session_state.topic.lower()
+    # check if there's a topic in question
+    if key == "topic" and not indicator_infos:
+        st.query_params[key] = st.session_state[key].lower()
+        return
+
+    # get indicator title from session
+    indicator_title = st.session_state[key]
+
+    # find the indicator id for a given indicator title
+    for item in indicator_infos:
+        if indicator_title == item.get("title"):
+            indicator_id = item.get("id")
+            break
+
+    # update the indicator query param
+    if indicator_id:
+        st.query_params[key] = indicator_id.lower()

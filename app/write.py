@@ -1,9 +1,7 @@
 import pandas as pd
 import altair as alt
 import streamlit as st
-from slugify import slugify
-from .countries import get_countries
-from .indicator import get_indicators_info, get_countries_data
+from .indicator import get_countries_data
 
 
 def chart_data(indicator_id: str, data: list[dict], country_codes: list[str]) -> None:
@@ -80,32 +78,3 @@ async def write_indicator(indicator_id: str, countries: dict[str, str]) -> None:
             st.error(f"Couldn't fetch results for {", ".join(missing)} right now.")
 
         chart_data(indicator_id, data, list(chart_country_codes))
-
-
-async def write_topic(title: str, indicator_ids: list[str]) -> None:
-    """Write all indicators from a topic."""
-
-    # write topic title to page
-    st.header(title, anchor=False, divider="blue")
-
-    # get all countries
-    countries = await get_countries()
-    if not countries:
-        msg = "Couldn't fetch and chart data right now due to World Bank API unavailability."
-        st.error(msg)
-        return
-
-    # get titles and descriptions for every indicator
-    indicator_infos = await get_indicators_info(indicator_ids)
-
-    for indicator_id, indicator_info in zip(indicator_ids, indicator_infos):
-        # write title and desc to page
-        if indicator_info:
-            topic_title = indicator_info.get("title", "")
-            st.subheader(topic_title, anchor=slugify(topic_title))
-            st.write(indicator_info.get("description"))
-        else:
-            st.error("Couldn't fetch title and/or description for this topic.")
-
-        # write multiselect, table and chart
-        await write_indicator(indicator_id, countries)

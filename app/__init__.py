@@ -1,9 +1,13 @@
 import os
 import streamlit as st
 from redis import Redis
-from . import options as op
 from dotenv import load_dotenv
+
+from . import options as op
+from .write import write_indicator
 from .cache import redis_client_ctx
+from .countries import get_countries
+from .indicator import get_indicators_info
 
 
 # load the enviroment variables from an .env file
@@ -29,27 +33,82 @@ async def create_app() -> None:
     redis_client = init_redis_client()
     redis_client_ctx.set(redis_client)
 
-    topics = op.get_topics()
-    select_options = op.make_options(topics)
-    index = op.get_topic_index(list(select_options.keys()))
-
     st.sidebar.title(":anger:  World Bank Data")
-
     st.sidebar.divider()
 
-    # render select box
-    if selected_topic := st.sidebar.selectbox(
+    # get all countries
+    if not (countries := await get_countries()):
+        msg = "Couldn't fetch and chart data right now due to World Bank API unavailability."
+        st.error(msg)
+        return
+
+    if not (topics := op.get_topics()):
+        st.error("Coulnd't fetch the topics from disk.")
+        return
+
+    topic_key = "topic"
+    topic_index = op.get_select_index(topic_key, topics.keys())
+
+    # selec topic
+    topic_title = st.sidebar.selectbox(
         label="Select topic:",
-        options=select_options.keys(),
-        placeholder="Choose a Topic",
-        index=index,
-        key="topic",
-        on_change=op.update_query_params,
-    ):
-        await select_options[selected_topic]()
+        options=topics.keys(),
+        placeholder="Select topic",
+        index=topic_index,
+        key=topic_key,
+        on_change=op.update_query_param,
+        args=(topic_key,),
+    )
+
+    if not topic_title:
+        st.error("Please select topic.")
+        return
+
+    # write topic title to page
+    st.header(topic_title, anchor=False, divider="blue")
+    # get indicator ids
+    indicator_ids = topics[topic_title]
+
+    # get info for every indicator
+    if not (indicator_infos := await get_indicators_info(indicator_ids)):
+        st.error("Couldn't fetch idnicators' titles/descriptions.")
+        return
+
+    # filter the indicator titles
+    indicator_titles = [iid_info.get("title") for iid_info in indicator_infos]
+    indicator_key = "indicator"
+    indicator_index = op.get_select_index(indicator_key, indicator_ids)
+
+    # render indicator selectbox
+    indicator_title = st.sidebar.selectbox(
+        label="Select indicator:",
+        options=indicator_titles,
+        placeholder="Select an indicator",
+        index=indicator_index,
+        key=indicator_key,
+        on_change=op.update_query_param,
+        args=(indicator_key, indicator_infos),
+    )
+
+    if not indicator_title:
+        st.error("Please select an indicator.")
+        return
+
+    for indicator_info in indicator_infos:
+        if indicator_title == indicator_info.get("title"):
+            break
+
+    # write title and desc to page
+    st.subheader(indicator_title, anchor=False)
+    st.write(indicator_info.get("description"))
+
+    if not (indicator_id := indicator_info.get("id")):
+        st.error("Unknown indicator id.")
+        return
+
+    await write_indicator(indicator_id, countries)
 
     st.sidebar.divider()
-
     st.sidebar.write("Source: https://data.worldbank.org")
 
 
