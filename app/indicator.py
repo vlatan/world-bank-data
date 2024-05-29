@@ -66,10 +66,10 @@ async def get_data(country_code: str, indicator_id: str) -> dict[str, str | dict
     }
 
     page_data = functools.partial(get_page_data, country_code, indicator_id)
-    pages, result = page_data()
-
-    if not result:
+    if (response := page_data()) is None:
         return empty_response
+
+    pages, result = response
 
     if pages == 1:
         return {
