@@ -33,16 +33,16 @@ async def create_app() -> None:
     """
     st.html(custom_style)
 
-    # store Redis client object in a context variable
-    # to be able to access it in threads down the line
-    redis_client = init_redis_client()
-    redis_client_ctx.set(redis_client)
-
     # logo and site title
     custom_h1 = f"<h1 class='main-title'>💢 <a href='/' target = '_self' title='Home'>World Bank Data</a></h1>"
     st.sidebar.markdown(custom_h1, unsafe_allow_html=True)
 
     st.sidebar.divider()
+
+    # store Redis client object in a context variable
+    # to be able to access it in threads down the line
+    redis_client = init_redis_client()
+    redis_client_ctx.set(redis_client)
 
     # get all countries
     if not (countries := await get_countries()):
