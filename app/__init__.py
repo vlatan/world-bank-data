@@ -24,8 +24,13 @@ async def create_app() -> None:
         page_icon=":anger:",
     )
 
-    # cursor pointer on dropdown select
-    custom_style = "<style>div[data-baseweb='select']>div:hover{cursor:pointer}</style>"
+    # cursor pointer on dropdown select and h1 link style
+    custom_style = """
+        <style>
+            div[data-baseweb='select'] > div:hover {cursor:pointer}
+            h1.main-title > a {text-decoration:none;color:white}
+        </style>
+    """
     st.html(custom_style)
 
     # store Redis client object in a context variable
@@ -33,7 +38,10 @@ async def create_app() -> None:
     redis_client = init_redis_client()
     redis_client_ctx.set(redis_client)
 
-    st.sidebar.title(":anger:  World Bank Data")
+    # logo and site title
+    custom_h1 = f"<h1 class='main-title'>💢 <a href='/' target = '_self' title='Home'>World Bank Data</a></h1>"
+    st.sidebar.markdown(custom_h1, unsafe_allow_html=True)
+
     st.sidebar.divider()
 
     # get all countries
@@ -46,14 +54,14 @@ async def create_app() -> None:
         st.error("Coulnd't fetch the topics from disk.")
         return
 
-    topic_key = "topic"
+    topic_label, topic_key = "Select topic", "topic"
     topic_index = op.get_select_index(topic_key, topics.keys())
 
     # selec topic
     topic_title = st.sidebar.selectbox(
-        label="Select topic:",
+        label=f"{topic_label}:",
         options=topics.keys(),
-        placeholder="Select topic",
+        placeholder=topic_label,
         index=topic_index,
         key=topic_key,
         on_change=op.update_query_param,
@@ -76,14 +84,14 @@ async def create_app() -> None:
 
     # filter the indicator titles
     indicator_titles = [iid_info.get("title") for iid_info in indicator_infos]
-    indicator_key = "indicator"
+    indicator_label, indicator_key = "Select indicator", "indicator"
     indicator_index = op.get_select_index(indicator_key, indicator_ids)
 
     # render indicator selectbox
     indicator_title = st.sidebar.selectbox(
-        label="Select indicator:",
+        label=f"{indicator_label}:",
         options=indicator_titles,
-        placeholder="Select an indicator",
+        placeholder=indicator_label,
         index=indicator_index,
         key=indicator_key,
         on_change=op.update_query_param,
