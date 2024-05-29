@@ -33,7 +33,7 @@ def get_info(indicator_id: str) -> dict[str, str]:
 @ch.cache_data
 def get_page_data(
     country_code: str, indicator_id: str, page: int = 1
-) -> tuple[int, dict[str, str]]:
+) -> None | tuple[int, dict[str, str]]:
     """Get country data for a given indicator for a given page."""
 
     url = f"{API_BASE_URL}/country/{country_code}/indicator/{indicator_id}"
@@ -44,12 +44,16 @@ def get_page_data(
         response.raise_for_status()
         response = response.json()
         pages, data = response[0]["pages"], response[1]
-        data = {item["date"]: item["value"] for item in data if item.get("value")}
+        data = {
+            item["date"]: item["value"]
+            for item in data
+            if item.get("value") is not None
+        }
         return pages, data
     except Exception:
         msg = f"Couldn't fetch country data from API ({url}) for page {page}."
         logging.exception(msg)
-        return 0, {}
+        return None
 
 
 async def get_data(country_code: str, indicator_id: str) -> dict[str, str | dict]:
@@ -81,9 +85,9 @@ async def get_data(country_code: str, indicator_id: str) -> dict[str, str | dict
         tasks = [tg.create_task(coro) for coro in coros]
 
     for task in tasks:
-        _, current_result = task.result()
-        if not current_result:
+        if (current_response := task.result()) is None:
             return empty_response
+        _, current_result = current_response
         result.update(current_result)
 
     return {
