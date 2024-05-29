@@ -64,6 +64,7 @@ async def create_app() -> None:
         placeholder=topic_label,
         index=topic_index,
         key=topic_key,
+        help="World Bank Data Topics",
         on_change=op.update_query_param,
         args=(topic_key,),
     )
@@ -94,6 +95,7 @@ async def create_app() -> None:
         placeholder=indicator_label,
         index=indicator_index,
         key=indicator_key,
+        help=f"{topic_title} Indicators",
         on_change=op.update_query_param,
         args=(indicator_key, indicator_infos),
     )
