@@ -34,8 +34,7 @@ async def create_app() -> None:
     st.html(custom_style)
 
     # logo and site title
-    custom_h1 = f"<h1 class='main-title'>💢 <a href='/' target = '_self' title='Home'>World Bank Data</a></h1>"
-    st.sidebar.markdown(custom_h1, unsafe_allow_html=True)
+    st.sidebar.title(":anger: World Bank Data")
 
     st.sidebar.divider()
 
