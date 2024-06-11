@@ -20,7 +20,7 @@ Create/activate virtual environment and install the app dependencies.
 python3 -m venv .venv &&
 source .venv/bin/activate &&
 pip install --upgrade pip &&
-pip install -r requirements.txt &&
+pip install -r requirements.txt
 ```
 
 Run the app out of the box on `localhost`, on port 8501.
