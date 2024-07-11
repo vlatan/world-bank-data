@@ -46,7 +46,7 @@ def cache_data(_func: Callable | None = None, *, ttl: int = 3600) -> Callable:
                 return result
 
             except ConnectionError:
-                if now := datetime.now(timezone.utc) >= func.expiretime:
+                if (now := datetime.now(timezone.utc)) >= func.expiretime:
                     func.cache_callable.cache_clear()
                     func.expiretime = now + func.lifetime
 
