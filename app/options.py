@@ -4,7 +4,7 @@ import streamlit as st
 from typing import Literal, Iterable
 
 
-@st.cache_data(show_spinner=False)
+@st.cache_data(show_spinner=False, ttl=3600)
 def get_topics() -> dict[str, Iterable[str]]:
     """Get topics and their indicator ids from file."""
 

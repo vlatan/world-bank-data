@@ -9,11 +9,11 @@ from datetime import datetime, timedelta, timezone
 redis_client_ctx = contextvars.ContextVar("redis_client")
 
 
-def cache_data(_func: Callable | None = None, *, ttl: int = 86400) -> Callable:
+def cache_data(_func: Callable | None = None, *, ttl: int = 3600) -> Callable:
     """
     Cache data in Redis.
     If Redis not available cache in functools.lru_cache.
-    If TTL not specified, default is 1 day, 86400 seconds.
+    If TTL not specified, default is 1 hour, 3600 seconds.
     """
 
     def decorator(func: Callable) -> Callable:
