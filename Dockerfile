@@ -43,7 +43,7 @@ ENV STREAMLIT_CLIENT_SHOW_ERROR_DETAILS=false \
 EXPOSE $PORT
 
 # https://docs.docker.com/reference/dockerfile/#healthcheck
-HEALTHCHECK CMD curl --fail http://localhost:${PORT}/_stcore/health
+HEALTHCHECK CMD curl --fail http://localhost:${STREAMLIT_SERVER_PORT}/_stcore/health
 
 # command to run the streamlit app
 CMD streamlit run run.py
