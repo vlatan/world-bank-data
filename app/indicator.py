@@ -20,7 +20,7 @@ def get_info(indicator_id: str) -> dict[str, str]:
         info = response.json()[1][0]
     except Exception:
         msg = f"Couldn't fetch indicator info from API: {url}"
-        logging.exception(msg)
+        logging.warning(msg)
         return {}
 
     return {
@@ -52,7 +52,7 @@ def get_page_data(
         return pages, data
     except Exception:
         msg = f"Couldn't fetch country data from API ({url}) for page {page}."
-        logging.exception(msg)
+        logging.warning(msg)
         return None
 
 

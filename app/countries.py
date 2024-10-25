@@ -22,7 +22,7 @@ def get_page_countries(page: int = 1) -> tuple[int, dict[str, str]]:
         return pages, result
     except Exception:
         msg = f"Couldn't fetch countries from API ({url}) for page {page}."
-        logging.exception(msg)
+        logging.warning(msg)
         return 0, {}
 
 
