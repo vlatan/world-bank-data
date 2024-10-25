@@ -54,7 +54,4 @@ def cache_data(_func: Callable | None = None, *, ttl: int = 3600) -> Callable:
 
         return wrapper
 
-    if _func is not None:
-        return decorator(_func)
-
-    return decorator
+    return decorator(_func) if _func else decorator
