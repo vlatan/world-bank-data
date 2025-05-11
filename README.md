@@ -28,7 +28,7 @@ Run the app out of the box on `localhost`, on port 8501.
 streamlit run run.py
 ```
 
-If you want to make use of [Docker](https://www.docker.com/) use the the following command, which utilizes the [compose.yaml](compose.yaml) file to spin the app and a Redis service in the background, which will make the app available on `localhost`, on port 8000.
+If you want to make use of [Docker](https://www.docker.com/) use the the following command, which utilizes the [compose.yaml](compose.yaml) file to spin the app and a Redis service in the background, which will make the app available on `localhost`, on port 8080.
 
 ```
 docker compose up --build --remove-orphans -d
