@@ -41,8 +41,8 @@ docker compose logs -f app
 
 ## Deployed
 
-Hosted on **Streamlit Community Cloud**. Expect a heavy cold start, or even a manual start.    
-https://worldbank.streamlit.app
+Hosted on [Railway](https://railway.com/). Expect cold start.    
+https://worldbank.up.railway.app/
 
 ## License
 
