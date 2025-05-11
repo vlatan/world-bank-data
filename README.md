@@ -42,7 +42,7 @@ docker compose logs -f app
 ## Deployed
 
 Hosted on **Railway**. Expect cold start.    
-https://worldbank.up.railway.app/
+https://worldbank.up.railway.app
 
 ## License
 
