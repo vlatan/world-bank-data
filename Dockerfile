@@ -22,8 +22,10 @@ COPY ./app ./app
 # https://docs.streamlit.io/develop/concepts/configuration/options
 # https://docs.streamlit.io/develop/api-reference/configuration/config.toml
 
-ENV VIRTUAL_ENV=/src/.venv \
-    PATH="/src/.venv/bin:${PATH}" \
+ENV PORT=8080 \
+    VIRTUAL_ENV=/src/.venv
+
+ENV PATH="${VIRTUAL_ENV}/bin:${PATH}" \
     PYTHONUNBUFFERED=1 \
     STREAMLIT_CLIENT_SHOW_ERROR_DETAILS=false \
     STREAMLIT_CLIENT_TOOLBAR_MODE=minimal \
@@ -31,7 +33,7 @@ ENV VIRTUAL_ENV=/src/.venv \
     STREAMLIT_SERVER_HEADLESS=true \
     STREAMLIT_SERVER_RUN_ON_SAVE=false \
     STREAMLIT_SERVER_ADDRESS=0.0.0.0 \
-    STREAMLIT_SERVER_PORT=8080 \
+    STREAMLIT_SERVER_PORT=${PORT} \
     STREAMLIT_BROWSER_GATHER_USAGE_STATS=false
 
 # https://docs.docker.com/reference/dockerfile/#healthcheck
