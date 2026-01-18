@@ -8,7 +8,7 @@ WORKDIR /src
 
 # create virtual environment with uv and install dependencies
 COPY requirements.txt .
-RUN --mount=from=ghcr.io/astral-sh/uv:0.7.2,source=/uv,target=/bin/uv \
+RUN --mount=from=ghcr.io/astral-sh/uv:0.9.26,source=/uv,target=/bin/uv \
     uv venv && \
     uv pip install --no-cache-dir --upgrade -r requirements.txt && \
     rm requirements.txt

@@ -23,26 +23,21 @@ pip install --upgrade pip &&
 pip install -r requirements.txt
 ```
 
-Run the app out of the box on `localhost`, on port 8501.
+Run the app out of the box.
 ``` bash
-streamlit run run.py
+streamlit run run.py --server.port 8080
 ```
 
-If you want to make use of [Docker](https://www.docker.com/) use the the following command, which utilizes the [compose.yaml](compose.yaml) file to spin the app and a Redis service in the background, which will make the app available on `localhost`, on port 8080.
+If you want to make use of [Docker](https://www.docker.com/) use the the following command, which utilizes the [compose.yaml](compose.yaml) file to spin the app and a Redis service in the background, which will make the app available on `localhost:8080`.
 
 ```
-docker compose up --build --remove-orphans -d
+docker compose up --build --detach
 ```
 
 You can check out the app logs with:
 ```
 docker compose logs -f app
 ```
-
-## Deployed
-
-Hosted on **Railway**. Expect cold start.    
-https://worldbank.up.railway.app
 
 ## License
 
