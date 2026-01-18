@@ -15,10 +15,6 @@ __pycache__
 redis_data
 
 
-# files
-todo.txt
-
-
 # dotfiles
 .coverage
 .coverage*

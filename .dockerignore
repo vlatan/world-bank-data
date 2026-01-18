@@ -19,7 +19,6 @@ redis_data
 # files (in the root)
 Dockerfile
 compose.yaml
-todo.txt
 
 
 # dotfiles (in the root)
