@@ -28,7 +28,7 @@ def chart_data(
     df = df.loc[:, time_range[0] : time_range[1]]
 
     # write dataframe to page
-    st.dataframe(df, use_container_width=True)
+    st.dataframe(df, width="stretch")
 
     # melt data to display on chart
     df = df.transpose().reset_index()
@@ -42,7 +42,7 @@ def chart_data(
         .encode(x="Year:T", y=alt.Y("Value:Q", stack=None), color="Region:N")
     )
 
-    st.altair_chart(chart, use_container_width=True)
+    st.altair_chart(chart, width="stretch")
 
 
 async def write_indicator(indicator_id: str, countries: dict[str, str]) -> None:
